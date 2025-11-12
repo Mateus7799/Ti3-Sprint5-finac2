@@ -23,6 +23,7 @@ public class FinanceiroService {
     private OperacaoRepository operacaoRepository;
 
     private static final Integer TIPO_VENDA = 0;
+    private static final Integer TIPO_COMPRA = 1;
 
     public FinanceiroFaturamentoResponseDTO getFaturamentoMensal(
             Integer anoAtual, Integer mesAtual,
@@ -48,6 +49,35 @@ public class FinanceiroService {
                 faturamentoAtual,
                 anoMesAtualStr,
                 faturamentoComparacao,
+                anoMesComparacaoStr,
+                margem
+        );
+    }
+
+    public FinanceiroFaturamentoResponseDTO getCustoMensal(
+            Integer anoAtual, Integer mesAtual,
+            Integer anoComparacao, Integer mesComparacao) {
+
+        BigDecimal custoAtual = operacaoRepository.sumValorByTipoAndAnoAndMes(
+                TIPO_COMPRA, anoAtual, mesAtual);
+        String anoMesAtualStr = String.format("%d-%02d", anoAtual, mesAtual);
+
+        BigDecimal custoComparacao = null;
+        String anoMesComparacaoStr = null;
+        BigDecimal margem = null;
+
+        if (anoComparacao != null && mesComparacao != null) {
+            custoComparacao = operacaoRepository.sumValorByTipoAndAnoAndMes(
+                    TIPO_COMPRA, anoComparacao, mesComparacao);
+            anoMesComparacaoStr = String.format("%d-%02d", anoComparacao, mesComparacao);
+
+            margem = calcularMargem(custoAtual, custoComparacao);
+        }
+
+        return new FinanceiroFaturamentoResponseDTO(
+                custoAtual,
+                anoMesAtualStr,
+                custoComparacao,
                 anoMesComparacaoStr,
                 margem
         );
