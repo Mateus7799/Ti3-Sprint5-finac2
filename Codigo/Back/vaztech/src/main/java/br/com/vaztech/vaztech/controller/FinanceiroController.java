@@ -36,23 +36,6 @@ public class FinanceiroController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/custo-mensal")
-    public ResponseEntity<FinanceiroFaturamentoResponseDTO> getCustoMensal(
-            @RequestParam("anoAtual") Integer anoAtual,
-            @RequestParam("mesAtual") Integer mesAtual,
-            @RequestParam(value = "anoComparacao", required = false) Integer anoComparacao,
-            @RequestParam(value = "mesComparacao", required = false) Integer mesComparacao) {
-
-        if ((anoComparacao != null && mesComparacao == null) || (anoComparacao == null && mesComparacao != null)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Para comparação, 'anoComparacao' e 'mesComparacao' devem ser fornecidos em conjunto.");
-        }
-
-        FinanceiroFaturamentoResponseDTO response = financeiroService.getCustoMensal(
-                anoAtual, mesAtual, anoComparacao, mesComparacao);
-
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/faturamento-anual")
     public ResponseEntity<FinanceiroFaturamentoAnualResponseDTO> getFaturamentoAnual(
             @RequestParam("ano") Integer ano) {
