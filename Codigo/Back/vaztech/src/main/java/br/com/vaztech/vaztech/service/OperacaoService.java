@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OperacaoService {
@@ -45,6 +46,17 @@ public class OperacaoService {
 
         return operacaoRepository.buscarOperacoesPaginadas(tipo, id, min, max, pageRequest)
                 .map(OperacaoResponseDTO::new);
+    }
+
+    public ResponseEntity<List<OperacaoResponseDTO>> buscarUltimosOperacoes(Integer quantidade) {
+        PageRequest pageRequest = PageRequest.of(0, quantidade, Sort.by(Sort.Direction.DESC, "id"));
+        List<OperacaoResponseDTO> ultimasOperacoes = operacaoRepository
+                .findAll(pageRequest)
+                .stream()
+                .map(OperacaoResponseDTO::new)
+                .toList();
+
+        return ResponseEntity.ok(ultimasOperacoes);
     }
 
     public ResponseEntity<?> validarFuncionarioParaEdicao(Integer id, String codigoFuncionario) {

@@ -14,7 +14,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import {
-  AdicionarServicoDTO,
+  AdicionarServicoDTO, 
   PessoaServico,
   ProdutoServico,
   Servico,

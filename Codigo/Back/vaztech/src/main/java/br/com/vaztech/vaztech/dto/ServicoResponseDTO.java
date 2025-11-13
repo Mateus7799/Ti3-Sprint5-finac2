@@ -1,37 +1,34 @@
 package br.com.vaztech.vaztech.dto;
 
+import br.com.vaztech.vaztech.entity.Pessoa;
 import br.com.vaztech.vaztech.entity.Servico;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record ServicoResponseDTO(
         Integer id,
-        Integer idProduto,
-        String produto,
+        ProdutoResponseDTO produto,
         Integer tipo,
         BigDecimal valor,
-        Integer idPessoa,
-        String pessoa,
+        Pessoa pessoa,
         LocalDate dataInicio,
         LocalDate dataFim,
         String observacoes,
-        Integer idStatus,
-        String status
+        String status,
+        String metodoPagamento
 ) {
     public ServicoResponseDTO(Servico servico) {
         this(
                 servico.getId(),
-                servico.getProduto() != null ? servico.getProduto().getId() : null,
-                servico.getProduto() != null ? servico.getProduto().getAparelho() : null,
+                new ProdutoResponseDTO(servico.getProduto()),
                 servico.getTipo(),
                 servico.getValor(),
-                servico.getPessoa() != null ? servico.getPessoa().getId() : null,
-                servico.getPessoa() != null ? servico.getPessoa().getNome() : null,
+                servico.getPessoa(),
                 servico.getDataInicio(),
                 servico.getDataFim(),
                 servico.getObservacoes(),
-                servico.getStatus() != null ? servico.getStatus().getId() : null,
-                servico.getStatus() != null ? servico.getStatus().getNome() : null
+                servico.getStatus() != null ? servico.getStatus().getNome() : null,
+                servico.getMetodoPagamento() != null ? servico.getMetodoPagamento().getNome() : null
         );
     }
 }

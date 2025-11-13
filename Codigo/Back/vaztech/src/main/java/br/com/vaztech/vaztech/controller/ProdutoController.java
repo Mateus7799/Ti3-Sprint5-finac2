@@ -20,8 +20,8 @@ public class ProdutoController {
 
     @GetMapping
     public Page<ProdutoResponseDTO> buscarProdutosPaginados(@RequestParam(value = "searchTerm", required = false) String searchTerm,
-                                                            @RequestParam int page,
-                                                            @RequestParam int size) {
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size) {
         return produtoService.listarProdutosPaginados(searchTerm, page, size);
     }
 

@@ -28,8 +28,8 @@ public class PessoaController {
 
     @GetMapping("/listar")
     public Page<PessoaResponseDTO> buscarPessoasPaginadas(@RequestParam(value = "searchTerm", required = false) String searchTerm,
-                                                                @RequestParam(value = "page") int page,
-                                                                @RequestParam(value = "size") int size) {
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "10") int size) {
         return pessoaService.buscarPessoasPaginadas(searchTerm, page, size);
     }
 

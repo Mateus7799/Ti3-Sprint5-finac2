@@ -1,7 +1,9 @@
 package br.com.vaztech.vaztech.controller;
 
+import br.com.vaztech.vaztech.dto.FinanceiroCustoResponseDTO;
 import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoAnualResponseDTO;
 import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoResponseDTO;
+import br.com.vaztech.vaztech.dto.FinanceiroLucroResponseDTO;
 import br.com.vaztech.vaztech.service.FinanceiroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,40 @@ public class FinanceiroController {
         }
 
         FinanceiroFaturamentoAnualResponseDTO response = financeiroService.getFaturamentoAnual(ano);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/lucro-mensal")
+    public ResponseEntity<FinanceiroLucroResponseDTO> getLucroMensal(
+            @RequestParam("anoAtual") Integer anoAtual,
+            @RequestParam("mesAtual") Integer mesAtual,
+            @RequestParam(value = "anoComparacao", required = false) Integer anoComparacao,
+            @RequestParam(value = "mesComparacao", required = false) Integer mesComparacao) {
+
+        if ((anoComparacao != null && mesComparacao == null) || (anoComparacao == null && mesComparacao != null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Para comparação, 'anoComparacao' e 'mesComparacao' devem ser fornecidos em conjunto.");
+        }
+
+        FinanceiroLucroResponseDTO response = financeiroService.getLucroMensal(
+                anoAtual, mesAtual, anoComparacao, mesComparacao);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/custo-mensal")
+    public ResponseEntity<FinanceiroCustoResponseDTO> getCustoMensal(
+            @RequestParam("anoAtual") Integer anoAtual,
+            @RequestParam("mesAtual") Integer mesAtual,
+            @RequestParam(value = "anoComparacao", required = false) Integer anoComparacao,
+            @RequestParam(value = "mesComparacao", required = false) Integer mesComparacao) {
+
+        if ((anoComparacao != null && mesComparacao == null) || (anoComparacao == null && mesComparacao != null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Para comparação, 'anoComparacao' e 'mesComparacao' devem ser fornecidos em conjunto.");
+        }
+
+        FinanceiroCustoResponseDTO response = financeiroService.getCustoMensal(
+                anoAtual, mesAtual, anoComparacao, mesComparacao);
+
         return ResponseEntity.ok(response);
     }
 }

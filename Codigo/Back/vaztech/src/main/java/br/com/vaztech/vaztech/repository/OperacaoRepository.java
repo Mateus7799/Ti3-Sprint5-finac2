@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
-
     @Query("""
     FROM Operacao o
     WHERE o.tipo = :tipo
@@ -41,4 +40,6 @@ public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
             "GROUP BY MONTH(o.dataHoraTransacao) " +
             "ORDER BY MONTH(o.dataHoraTransacao) ASC")
     List<FaturamentoPorMesDTO> findFaturamentoByAnoGroupByMes(@Param("tipo") Integer tipo, @Param("ano") Integer ano);
+
+
 }

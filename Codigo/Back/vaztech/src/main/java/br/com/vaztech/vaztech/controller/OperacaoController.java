@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/operacao")
@@ -23,9 +24,14 @@ public class OperacaoController {
                                                               @RequestParam(value = "id", required = false) Integer id,
                                                               @RequestParam(value = "min", required = false) BigDecimal min,
                                                               @RequestParam(value = "max", required = false) BigDecimal max,
-                                                              @RequestParam(value = "page") int page,
-                                                              @RequestParam(value = "size") int size) {
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
         return operacaoService.buscarOperacoesPaginadas(tipo, id, min, max, page, size);
+    }
+
+    @GetMapping("/ultimas")
+    public ResponseEntity<List<OperacaoResponseDTO>> buscarUltimosOperacoes(@RequestParam(defaultValue = "5") int quantidade) {
+        return operacaoService.buscarUltimosOperacoes(quantidade);
     }
 
     @GetMapping("/{id}/validar-funcionario")

@@ -19,7 +19,7 @@ public record ProdutoResponseDTO(
                 produto.getModelo(),
                 produto.getCor(),
                 produto.getObservacoes(),
-                produto.getStatus().getNome()
+                produto.getStatus() != null ? produto.getStatus().getNome() : null
         );
     }
 }
