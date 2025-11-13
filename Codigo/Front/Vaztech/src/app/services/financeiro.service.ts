@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Observable, map } from 'rxjs';
+import { Observable, forkJoin, map, of, catchError } from 'rxjs';
 import {
   DadosFinanceirosMes,
   FinanceiroFaturamentoResponseDTO,
@@ -15,12 +15,21 @@ export class FinanceiroService {
   apiRoute = 'api/financeiro';
 
   buscarDadosMes(ano: number, mes: number): Observable<DadosFinanceirosMes> {
-    return this.http.get<FinanceiroFaturamentoResponseDTO>(
-      `${environment.apiURL}/${this.apiRoute}/faturamento-mensal?anoAtual=${ano}&mesAtual=${mes}`,
-    ).pipe(
-      map((result) => {
-        const faturamento = result.faturamentoMesAtual || 0;
-        const custo = 0;
+    return forkJoin({
+      faturamento: this.http.get<FinanceiroFaturamentoResponseDTO>(
+        `${environment.apiURL}/${this.apiRoute}/faturamento-mensal?anoAtual=${ano}&mesAtual=${mes}`,
+      ).pipe(
+        map(result => result.faturamentoMesAtual || 0),
+        catchError(() => of(0))
+      ),
+      custo: this.http.get<FinanceiroFaturamentoResponseDTO>(
+        `${environment.apiURL}/${this.apiRoute}/faturamento-mensal?anoAtual=${ano}&mesAtual=${mes}`,
+      ).pipe(
+        map(() => 0),
+        catchError(() => of(0))
+      )
+    }).pipe(
+      map(({ faturamento, custo }) => {
         const lucro = faturamento - custo;
 
         return {
@@ -31,7 +40,7 @@ export class FinanceiroService {
           ano,
           mesNome: this.getNomeMes(mes),
         };
-      }),
+      })
     );
   }
 
