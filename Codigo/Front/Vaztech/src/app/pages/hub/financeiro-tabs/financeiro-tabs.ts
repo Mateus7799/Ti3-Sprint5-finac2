@@ -89,11 +89,18 @@ export class FinanceiroTabsComponent implements OnInit {
         this.dadosMesAtual = dados;
       },
       error: (err) => {
-        console.error(err);
+        console.error('Erro ao carregar dados financeiros:', err);
+        this.dadosMesAtual = {
+          faturamento: 0,
+          custo: 0,
+          lucro: 0,
+          mes: mesAtual,
+          ano: anoAtual,
+        };
         this.toastService.add({
-          severity: 'error',
-          summary: 'Erro ao carregar dados',
-          detail: 'Não foi possível carregar os dados financeiros do mês atual.',
+          severity: 'warn',
+          summary: 'Dados não disponíveis',
+          detail: 'Exibindo valores zerados. Verifique a conexão com o servidor.',
         });
       },
     });
@@ -120,11 +127,19 @@ export class FinanceiroTabsComponent implements OnInit {
         });
       },
       error: (err) => {
-        console.error(err);
+        console.error('Erro ao carregar dados do mês selecionado:', err);
+        this.dadosMesAtual = {
+          faturamento: 0,
+          custo: 0,
+          lucro: 0,
+          mes: this.mesSelecionado!,
+          ano: this.anoSelecionado!,
+        };
+        this.modalSeletorMesAberto = false;
         this.toastService.add({
-          severity: 'error',
-          summary: 'Erro ao carregar dados',
-          detail: 'Não foi possível carregar os dados do mês selecionado.',
+          severity: 'warn',
+          summary: 'Dados não disponíveis',
+          detail: 'Exibindo valores zerados para o mês selecionado.',
         });
       },
     });
@@ -172,22 +187,60 @@ export class FinanceiroTabsComponent implements OnInit {
               this.dadosComparacao = this.calcularComparacao(dados1, dados2);
             },
             error: (err) => {
-              console.error(err);
+              console.error('Erro ao carregar dados do segundo mês:', err);
+              const dados2Zerado: DadosFinanceirosMes = {
+                faturamento: 0,
+                custo: 0,
+                lucro: 0,
+                mes: this.comparacao.mes2!,
+                ano: this.comparacao.ano2!,
+              };
+              this.dadosComparacao = this.calcularComparacao(dados1, dados2Zerado);
               this.toastService.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: 'Não foi possível carregar os dados do segundo mês.',
+                severity: 'warn',
+                summary: 'Dados parciais',
+                detail: 'Segundo mês com valores zerados.',
               });
             },
           });
       },
       error: (err) => {
-        console.error(err);
-        this.toastService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Não foi possível carregar os dados do primeiro mês.',
-        });
+        console.error('Erro ao carregar dados do primeiro mês:', err);
+        const dados1Zerado: DadosFinanceirosMes = {
+          faturamento: 0,
+          custo: 0,
+          lucro: 0,
+          mes: this.comparacao.mes1!,
+          ano: this.comparacao.ano1!,
+        };
+        this.financeiroService
+          .buscarDadosMes(this.comparacao.ano2!, this.comparacao.mes2!)
+          .subscribe({
+            next: (dados2) => {
+              this.dadosComparacao = this.calcularComparacao(dados1Zerado, dados2);
+              this.toastService.add({
+                severity: 'warn',
+                summary: 'Dados parciais',
+                detail: 'Primeiro mês com valores zerados.',
+              });
+            },
+            error: (err2) => {
+              console.error('Erro ao carregar dados do segundo mês:', err2);
+              const dados2Zerado: DadosFinanceirosMes = {
+                faturamento: 0,
+                custo: 0,
+                lucro: 0,
+                mes: this.comparacao.mes2!,
+                ano: this.comparacao.ano2!,
+              };
+              this.dadosComparacao = this.calcularComparacao(dados1Zerado, dados2Zerado);
+              this.toastService.add({
+                severity: 'warn',
+                summary: 'Dados não disponíveis',
+                detail: 'Exibindo valores zerados para ambos os meses.',
+              });
+            },
+          });
       },
     });
   }
