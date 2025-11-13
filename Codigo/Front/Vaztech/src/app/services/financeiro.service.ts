@@ -1,11 +1,27 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Observable, map } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 import {
   DadosFinanceirosMes,
   FinanceiroFaturamentoResponseDTO,
 } from '../models/financeiro.model';
+
+interface FinanceiroCustoResponseDTO {
+  custoMesAtual: number;
+  anoMesAtual: string;
+  custoMesComparacao: number | null;
+  anoMesComparacao: string | null;
+  margem: number | null;
+}
+
+interface FinanceiroLucroResponseDTO {
+  lucroAtual: number;
+  anoMesAtualStr: string;
+  lucroComparacao: number | null;
+  anoMesComparacaoStr: string | null;
+  margem: number | null;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -15,13 +31,19 @@ export class FinanceiroService {
   apiRoute = 'api/financeiro';
 
   buscarDadosMes(ano: number, mes: number): Observable<DadosFinanceirosMes> {
-    return this.http.get<FinanceiroFaturamentoResponseDTO>(
-      `${environment.apiURL}/${this.apiRoute}/faturamento-mensal?anoAtual=${ano}&mesAtual=${mes}`,
-    ).pipe(
+    const faturamentoUrl = `${environment.apiURL}/${this.apiRoute}/faturamento-mensal?anoAtual=${ano}&mesAtual=${mes}`;
+    const custoUrl = `${environment.apiURL}/${this.apiRoute}/custo-mensal?anoAtual=${ano}&mesAtual=${mes}`;
+    const lucroUrl = `${environment.apiURL}/${this.apiRoute}/lucro-mensal?anoAtual=${ano}&mesAtual=${mes}`;
+
+    return forkJoin({
+      faturamento: this.http.get<FinanceiroFaturamentoResponseDTO>(faturamentoUrl),
+      custo: this.http.get<FinanceiroCustoResponseDTO>(custoUrl),
+      lucro: this.http.get<FinanceiroLucroResponseDTO>(lucroUrl)
+    }).pipe(
       map((result) => {
-        const faturamento = result.faturamentoMesAtual || 0;
-        const custo = 0;
-        const lucro = faturamento - custo;
+        const faturamento = result.faturamento.faturamentoMesAtual || 0;
+        const custo = result.custo.custoMesAtual || 0;
+        const lucro = result.lucro.lucroAtual || 0;
 
         return {
           faturamento,
