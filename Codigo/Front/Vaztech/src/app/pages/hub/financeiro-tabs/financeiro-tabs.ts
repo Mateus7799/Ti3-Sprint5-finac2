@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { ChangeDetectorRef, Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -10,7 +10,12 @@ import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { FinanceiroService } from '../../../services/financeiro.service';
-import { ComparacaoMeses, DadosFinanceirosMes } from '../../../models/financeiro.model';
+import { ChartModule } from 'primeng/chart';
+import {
+  ComparacaoMeses,
+  DadosAnoVisaoGeral,
+  DadosFinanceirosMes,
+} from '../../../models/financeiro.model';
 
 @Component({
   selector: 'app-financeiro-tabs',
@@ -20,6 +25,7 @@ import { ComparacaoMeses, DadosFinanceirosMes } from '../../../models/financeiro
     FormsModule,
     ButtonModule,
     CardModule,
+    ChartModule,
     DialogModule,
     SelectModule,
     ToastModule,
@@ -31,6 +37,7 @@ import { ComparacaoMeses, DadosFinanceirosMes } from '../../../models/financeiro
   providers: [MessageService],
 })
 export class FinanceiroTabsComponent implements OnInit {
+  platformId = inject(PLATFORM_ID);
   financeiroService = inject(FinanceiroService);
   toastService = inject(MessageService);
 
@@ -43,6 +50,11 @@ export class FinanceiroTabsComponent implements OnInit {
   anoSelecionado: number | null = null;
   mesSelecionado: number | null = null;
 
+  dadosVisaoGeral: DadosAnoVisaoGeral | undefined;
+
+  infoGrafico: any;
+  optsGrafico: any;
+
   comparacao = {
     ano1: null as number | null,
     mes1: null as number | null,
@@ -51,20 +63,8 @@ export class FinanceiroTabsComponent implements OnInit {
   };
 
   anosDisponiveis: number[] = [];
-  mesesDisponiveis = [
-    { nome: 'Janeiro', valor: 1 },
-    { nome: 'Fevereiro', valor: 2 },
-    { nome: 'Março', valor: 3 },
-    { nome: 'Abril', valor: 4 },
-    { nome: 'Maio', valor: 5 },
-    { nome: 'Junho', valor: 6 },
-    { nome: 'Julho', valor: 7 },
-    { nome: 'Agosto', valor: 8 },
-    { nome: 'Setembro', valor: 9 },
-    { nome: 'Outubro', valor: 10 },
-    { nome: 'Novembro', valor: 11 },
-    { nome: 'Dezembro', valor: 12 },
-  ];
+
+  constructor(private cd: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.inicializarAnos();
@@ -83,6 +83,8 @@ export class FinanceiroTabsComponent implements OnInit {
     const dataAtual = new Date();
     const mesAtual = dataAtual.getMonth() + 1;
     const anoAtual = dataAtual.getFullYear();
+    this.mesSelecionado = mesAtual;
+    this.anoSelecionado = anoAtual;
 
     this.financeiroService.buscarDadosMes(anoAtual, mesAtual).subscribe({
       next: (dados) => {
@@ -116,6 +118,14 @@ export class FinanceiroTabsComponent implements OnInit {
   confirmarSelecaoMes(): void {
     if (!this.anoSelecionado || !this.mesSelecionado) return;
 
+    if (this.vendoVisaoGeral) {
+      this.dadosMesAtual = null;
+      this.buscarDadosVisaoGeral(this.anoSelecionado);
+      return;
+    }
+
+    this.dadosVisaoGeral = undefined;
+
     this.financeiroService.buscarDadosMes(this.anoSelecionado, this.mesSelecionado).subscribe({
       next: (dados) => {
         this.dadosMesAtual = dados;
@@ -145,6 +155,23 @@ export class FinanceiroTabsComponent implements OnInit {
     });
   }
 
+  buscarDadosVisaoGeral(ano: number) {
+    this.financeiroService.buscarDadosAno(ano).subscribe({
+      next: (dados) => {
+        this.dadosVisaoGeral = { ...dados };
+        this.carregarGrafico();
+        console.log(this.dadosVisaoGeral);
+      },
+      error: (err) => {
+        this.toastService.add({
+          severity: 'error',
+          summary: 'Ocorreu um erro!',
+          detail: err.error.message,
+        });
+      },
+    });
+  }
+
   abrirModalComparacao(): void {
     this.comparacao = {
       ano1: null,
@@ -154,6 +181,73 @@ export class FinanceiroTabsComponent implements OnInit {
     };
     this.dadosComparacao = null;
     this.modalComparacaoAberto = true;
+  }
+
+  carregarGrafico() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--p-text-color');
+    const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
+    const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color');
+    this.infoGrafico = {
+      labels: this.dadosVisaoGeral?.faturamento.faturamentoMensal.map((fm) => fm.mesNome),
+      datasets: [
+        {
+          label: 'Faturamento',
+          data: this.dadosVisaoGeral?.faturamento.faturamentoMensal.map((fm) => fm.total),
+          fill: false,
+          borderColor: documentStyle.getPropertyValue('--p-green-500'),
+          tension: 0.4,
+        },
+        {
+          label: 'Custos',
+          data: this.dadosVisaoGeral?.custo.custoMensal.map((fm) => fm.total),
+          fill: false,
+          borderColor: documentStyle.getPropertyValue('--p-red-500'),
+          tension: 0.4,
+        },
+        {
+          label: 'Lucro',
+          data: this.dadosVisaoGeral?.lucro.lucroMensal.map((fm) => fm.total),
+          fill: false,
+          borderColor: documentStyle.getPropertyValue('--p-primary-500'),
+          tension: 0.4,
+        },
+      ],
+    };
+    this.optsGrafico = {
+      responsive: true,
+      maintainAspectRatio: false,
+      aspectRatio: 0.9,
+      plugins: {
+        legend: {
+          labels: {
+            color: textColor,
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: textColorSecondary,
+          },
+          grid: {
+            color: surfaceBorder,
+            drawBorder: false,
+          },
+        },
+        y: {
+          ticks: {
+            color: textColorSecondary,
+          },
+          grid: {
+            color: surfaceBorder,
+            drawBorder: false,
+          },
+        },
+      },
+    };
+    this.cd.markForCheck();
   }
 
   realizarComparacao(): void {
@@ -269,5 +363,44 @@ export class FinanceiroTabsComponent implements OnInit {
 
   getNomeMes(mes: number): string {
     return this.mesesDisponiveis.find((m) => m.valor === mes)?.nome || '';
+  }
+
+  get mesesDisponiveis() {
+    return [
+      { nome: 'Janeiro', valor: 1 },
+      { nome: 'Fevereiro', valor: 2 },
+      { nome: 'Março', valor: 3 },
+      { nome: 'Abril', valor: 4 },
+      { nome: 'Maio', valor: 5 },
+      { nome: 'Junho', valor: 6 },
+      { nome: 'Julho', valor: 7 },
+      { nome: 'Agosto', valor: 8 },
+      { nome: 'Setembro', valor: 9 },
+      { nome: 'Outubro', valor: 10 },
+      { nome: 'Novembro', valor: 11 },
+      { nome: 'Dezembro', valor: 12 },
+    ];
+  }
+
+  get mesesDisponiveisVisaoGeral() {
+    return [
+      { nome: 'Janeiro', valor: 1 },
+      { nome: 'Fevereiro', valor: 2 },
+      { nome: 'Março', valor: 3 },
+      { nome: 'Abril', valor: 4 },
+      { nome: 'Maio', valor: 5 },
+      { nome: 'Junho', valor: 6 },
+      { nome: 'Julho', valor: 7 },
+      { nome: 'Agosto', valor: 8 },
+      { nome: 'Setembro', valor: 9 },
+      { nome: 'Outubro', valor: 10 },
+      { nome: 'Novembro', valor: 11 },
+      { nome: 'Dezembro', valor: 12 },
+      { nome: 'Visão Geral', valor: 13 },
+    ];
+  }
+
+  get vendoVisaoGeral() {
+    return this.mesSelecionado === 13;
   }
 }

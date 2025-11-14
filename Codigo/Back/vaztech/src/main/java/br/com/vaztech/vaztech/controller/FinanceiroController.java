@@ -1,9 +1,6 @@
 package br.com.vaztech.vaztech.controller;
 
-import br.com.vaztech.vaztech.dto.FinanceiroCustoResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoAnualResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroLucroResponseDTO;
+import br.com.vaztech.vaztech.dto.*;
 import br.com.vaztech.vaztech.service.FinanceiroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,6 +78,30 @@ public class FinanceiroController {
         FinanceiroCustoResponseDTO response = financeiroService.getCustoMensal(
                 anoAtual, mesAtual, anoComparacao, mesComparacao);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/custo-anual")
+    public ResponseEntity<FinanceiroCustoAnualResponseDTO> getCustoAnual(
+            @RequestParam("ano") Integer ano) {
+
+        if (ano == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O parâmetro 'ano' é obrigatório.");
+        }
+
+        FinanceiroCustoAnualResponseDTO response = financeiroService.getCustoAnual(ano);
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/lucro-anual")
+    public ResponseEntity<FinanceiroLucroAnualResponseDTO> getLucroAnual(
+            @RequestParam("ano") Integer ano) {
+
+        if (ano == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O parâmetro 'ano' é obrigatório.");
+        }
+
+        FinanceiroLucroAnualResponseDTO response = financeiroService.getLucroAnual(ano);
         return ResponseEntity.ok(response);
     }
 }

@@ -10,7 +10,7 @@
         <p-button
           [outlined]="true"
           [rounded]="true"
-          severity="secondary"
+          severity="primary"
           label="Pesquisar"
           (click)="buscarPessoas()"
         ></p-button>
@@ -18,7 +18,7 @@
           <p-button
             [outlined]="true"
             [rounded]="true"
-            severity="secondary"
+            severity="primary"
             label="Limpar Busca"
             icon="pi pi-times-circle"
             (click)="listarPessoas()"
@@ -58,7 +58,7 @@
               <p-button
                 icon="pi pi-pen-to-square"
                 [text]="true"
-                severity="secondary"
+                severity="primary"
                 [rounded]="true"
                 (click)="abrirModalEditar(pessoa)"
               ></p-button>
@@ -183,7 +183,7 @@
       <div class="flex justify-end gap-2 pt-4">
         <p-button
           label="Cancelar"
-          severity="secondary"
+          severity="primary"
           [outlined]="true"
           (click)="modalFormularioAberto = false; esconderFormularioModal(pessoaForm)"
         ></p-button>

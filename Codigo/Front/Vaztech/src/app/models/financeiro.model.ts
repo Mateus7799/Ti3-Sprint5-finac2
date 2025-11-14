@@ -17,6 +17,36 @@ export type ComparacaoMeses = {
   };
 };
 
+export type DadosAnoVisaoGeral = {
+  faturamento: FaturamentoAnualVisaoGeral;
+  custo: CustoAnualVisaoGeral;
+  lucro: LucroAnualVisaoGeral;
+};
+
+export type FaturamentoAnualVisaoGeral = {
+  ano: number;
+  faturamentoTotalAnual: number;
+  faturamentoMensal: DadosMesVisaoGeral[];
+};
+
+export type CustoAnualVisaoGeral = {
+  ano: number;
+  custoTotalAnual: number;
+  custoMensal: DadosMesVisaoGeral[];
+};
+
+export type LucroAnualVisaoGeral = {
+  ano: number;
+  lucroTotalAnual: number;
+  lucroMensal: DadosMesVisaoGeral[];
+};
+
+export type DadosMesVisaoGeral = {
+  mes: number;
+  mesNome: string;
+  total: number;
+};
+
 export type FinanceiroFaturamentoResponseDTO = {
   faturamentoMesAtual: number;
   anoMesAtual: string;

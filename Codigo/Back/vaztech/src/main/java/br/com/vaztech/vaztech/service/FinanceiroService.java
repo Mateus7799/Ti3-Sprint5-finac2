@@ -1,10 +1,6 @@
 package br.com.vaztech.vaztech.service;
 
-import br.com.vaztech.vaztech.dto.FinanceiroCustoResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoAnualResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroFaturamentoResponseDTO;
-import br.com.vaztech.vaztech.dto.FinanceiroLucroResponseDTO;
-import br.com.vaztech.vaztech.dto.FaturamentoPorMesDTO;
+import br.com.vaztech.vaztech.dto.*;
 import br.com.vaztech.vaztech.repository.OperacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +22,7 @@ public class FinanceiroService {
 
     private static final Integer TIPO_VENDA = 0;
     private static final Integer TIPO_COMPRA = 1;
+    private static final Locale LOCALE_BRASIL = new Locale("pt", "BR");
 
     public FinanceiroFaturamentoResponseDTO getFaturamentoMensal(
             Integer anoAtual, Integer mesAtual,
@@ -68,17 +65,15 @@ public class FinanceiroService {
                 new ArrayList<>();
 
         BigDecimal faturamentoTotal = BigDecimal.ZERO;
-        Locale localeBrasil = new Locale("pt", "BR");
 
         for (int mes = 1; mes <= 12; mes++) {
             BigDecimal totalMes = mapaFaturamento.getOrDefault(mes, BigDecimal.ZERO);
-            String nomeMes = Month.of(mes).getDisplayName(TextStyle.FULL, localeBrasil);
+            String nomeMes = getNomeMesFormatado(mes);
 
             detalhamentoMensal.add(
                     new FinanceiroFaturamentoAnualResponseDTO.FaturamentoMensalDetalhe(
                             mes,
-                            // ("janeiro" -> "Janeiro")
-                            nomeMes.substring(0, 1).toUpperCase() + nomeMes.substring(1),
+                            nomeMes,
                             totalMes
                     )
             );
@@ -92,8 +87,6 @@ public class FinanceiroService {
         );
     }
 
-
-     //Calcula o lucro mensal (Faturamento - Custo) e permite comparação.
     public FinanceiroLucroResponseDTO getLucroMensal(
             Integer anoAtual, Integer mesAtual,
             Integer anoComparacao, Integer mesComparacao) {
@@ -131,7 +124,6 @@ public class FinanceiroService {
         );
     }
 
-    //Calcula o custo mensal (Operações de Compra) e permite comparação.
     public FinanceiroCustoResponseDTO getCustoMensal(
             Integer anoAtual, Integer mesAtual,
             Integer anoComparacao, Integer mesComparacao) {
@@ -161,13 +153,87 @@ public class FinanceiroService {
         );
     }
 
-    // ((atual - comparacao) / comparacao) * 100
+    public FinanceiroCustoAnualResponseDTO getCustoAnual(Integer ano) {
+
+        List<FaturamentoPorMesDTO> custoAgrupado =
+                operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_COMPRA, ano);
+
+        Map<Integer, BigDecimal> mapaCusto = custoAgrupado.stream()
+                .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FinanceiroCustoAnualResponseDTO.CustoMensalDetalhe> detalhamentoMensal =
+                new ArrayList<>();
+
+        BigDecimal custoTotal = BigDecimal.ZERO;
+
+        for (int mes = 1; mes <= 12; mes++) {
+            BigDecimal totalMes = mapaCusto.getOrDefault(mes, BigDecimal.ZERO);
+            String nomeMes = getNomeMesFormatado(mes);
+
+            detalhamentoMensal.add(
+                    new FinanceiroCustoAnualResponseDTO.CustoMensalDetalhe(
+                            mes,
+                            nomeMes,
+                            totalMes
+                    )
+            );
+            custoTotal = custoTotal.add(totalMes);
+        }
+
+        return new FinanceiroCustoAnualResponseDTO(
+                ano,
+                custoTotal.setScale(2, RoundingMode.HALF_UP),
+                detalhamentoMensal
+        );
+    }
+
+    public FinanceiroLucroAnualResponseDTO getLucroAnual(Integer ano) {
+
+        List<FaturamentoPorMesDTO> faturamentoAgrupado =
+                operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_VENDA, ano);
+        Map<Integer, BigDecimal> mapaFaturamento = faturamentoAgrupado.stream()
+                .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FaturamentoPorMesDTO> custoAgrupado =
+                operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_COMPRA, ano);
+        Map<Integer, BigDecimal> mapaCusto = custoAgrupado.stream()
+                .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FinanceiroLucroAnualResponseDTO.LucroMensalDetalhe> detalhamentoMensal =
+                new ArrayList<>();
+        BigDecimal lucroTotal = BigDecimal.ZERO;
+
+        for (int mes = 1; mes <= 12; mes++) {
+            BigDecimal faturamentoMes = mapaFaturamento.getOrDefault(mes, BigDecimal.ZERO);
+            BigDecimal custoMes = mapaCusto.getOrDefault(mes, BigDecimal.ZERO);
+            BigDecimal lucroMes = faturamentoMes.subtract(custoMes);
+
+            String nomeMes = getNomeMesFormatado(mes);
+
+            detalhamentoMensal.add(
+                    new FinanceiroLucroAnualResponseDTO.LucroMensalDetalhe(
+                            mes,
+                            nomeMes,
+                            lucroMes
+                    )
+            );
+            lucroTotal = lucroTotal.add(lucroMes);
+        }
+
+        return new FinanceiroLucroAnualResponseDTO(
+                ano,
+                lucroTotal.setScale(2, RoundingMode.HALF_UP),
+                detalhamentoMensal
+        );
+    }
+
     private BigDecimal calcularMargem(BigDecimal atual, BigDecimal comparacao) {
         if (comparacao == null || comparacao.compareTo(BigDecimal.ZERO) == 0) {
             // Se comparacao é zero e atual é positivo, o crescimento é "infinito" (representado como 100%)
             if (atual.compareTo(BigDecimal.ZERO) > 0) {
                 return new BigDecimal("100.00");
             }
+            // Se ambos são zero, não houve mudança.
             return BigDecimal.ZERO;
         }
 
@@ -177,5 +243,11 @@ public class FinanceiroService {
         return diferenca.divide(comparacao, 4, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100"))
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String getNomeMesFormatado(int mes) {
+        String nomeMes = Month.of(mes).getDisplayName(TextStyle.FULL, LOCALE_BRASIL);
+        // ("janeiro" -> "Janeiro")
+        return nomeMes.substring(0, 1).toUpperCase() + nomeMes.substring(1);
     }
 }

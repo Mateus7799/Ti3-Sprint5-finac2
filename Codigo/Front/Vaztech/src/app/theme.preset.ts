@@ -24,6 +24,24 @@ const AppPreset = definePreset(Aura, {
       },
     },
   },
+  components: {
+    button: {
+      colorScheme: {
+        light: {
+          outlined: {
+            primary: {
+              hoverBackground: '{sky.100}',
+            },
+          },
+          text: {
+            primary: {
+              hoverBackground: '{sky.100}',
+            },
+          },
+        },
+      },
+    },
+  },
 });
 
 export { AppPreset };
