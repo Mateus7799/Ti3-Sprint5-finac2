@@ -114,72 +114,78 @@
           </div>
         }
         <!-- Cards do Mês Anterior -->
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-primary">
-            Resumo - {{ getNomeMes(dadosMesAtual?.mes || 0) }}/{{ dadosMesAtual?.ano }}
-          </h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Card Faturamento -->
-          <p-card styleClass="shadow-md border-4 border-green-200">
-            <ng-template #header>
-              <div class="flex items-center gap-3 rounded-t-lg p-4 bg-green-50">
-                <i class="pi pi-dollar text-3xl text-green-600"></i>
-                <div>
-                  <h3 class="text-lg font-semibold text-green-800">Faturamento</h3>
-                  <p class="text-sm text-green-600">Total de Vendas</p>
+        @if (dadosMesAnterior) {
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-primary">
+              Resumo - {{ getNomeMes(dadosMesAnterior?.mes || 0) }}/{{ dadosMesAnterior?.ano }}
+            </h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card Faturamento -->
+            <p-card styleClass="shadow-md border-4 border-green-200">
+              <ng-template #header>
+                <div class="flex items-center gap-3 rounded-t-lg p-4 bg-green-50">
+                  <i class="pi pi-dollar text-3xl text-green-600"></i>
+                  <div>
+                    <h3 class="text-lg font-semibold text-green-800">Faturamento</h3>
+                    <p class="text-sm text-green-600">Total de Vendas</p>
+                  </div>
                 </div>
+              </ng-template>
+              <div class="text-center py-4">
+                <p class="text-3xl font-bold text-green-700">
+                  {{ dadosMesAnterior.faturamento | currency: 'BRL' }}
+                </p>
               </div>
-            </ng-template>
-            <div class="text-center py-4">
-              <p class="text-3xl font-bold text-green-700">
-                {{ dadosMesAtual.faturamento | currency: 'BRL' }}
-              </p>
-            </div>
-          </p-card>
+            </p-card>
 
-          <!-- Card Custo -->
-          <p-card styleClass="shadow-md border-4 border-red-200">
-            <ng-template #header>
-              <div class="flex items-center gap-3 rounded-t-lg p-4 bg-red-50">
-                <i class="pi pi-shopping-cart text-3xl text-red-600"></i>
-                <div>
-                  <h3 class="text-lg font-semibold text-red-800">Custo</h3>
-                  <p class="text-sm text-red-600">Total de Compras</p>
+            <!-- Card Custo -->
+            <p-card styleClass="shadow-md border-4 border-red-200">
+              <ng-template #header>
+                <div class="flex items-center gap-3 rounded-t-lg p-4 bg-red-50">
+                  <i class="pi pi-shopping-cart text-3xl text-red-600"></i>
+                  <div>
+                    <h3 class="text-lg font-semibold text-red-800">Custo</h3>
+                    <p class="text-sm text-red-600">Total de Compras</p>
+                  </div>
                 </div>
+              </ng-template>
+              <div class="text-center py-4">
+                <p class="text-3xl font-bold text-red-700">
+                  {{ dadosMesAnterior.custo | currency: 'BRL' }}
+                </p>
               </div>
-            </ng-template>
-            <div class="text-center py-4">
-              <p class="text-3xl font-bold text-red-700">
-                {{ dadosMesAtual.custo | currency: 'BRL' }}
-              </p>
-            </div>
-          </p-card>
+            </p-card>
 
-          <!-- Card Lucro -->
-          <p-card styleClass="shadow-md border-4 border-blue-200">
-            <ng-template #header>
-              <div class="flex items-center rounded-t-md gap-3 p-4 bg-blue-50">
-                <i class="pi pi-chart-line text-3xl text-blue-600"></i>
-                <div>
-                  <h3 class="text-lg font-semibold text-blue-800">Lucro</h3>
-                  <p class="text-sm text-blue-600">Faturamento - Custo</p>
+            <!-- Card Lucro -->
+            <p-card styleClass="shadow-md border-4 border-blue-200">
+              <ng-template #header>
+                <div class="flex items-center rounded-t-md gap-3 p-4 bg-blue-50">
+                  <i class="pi pi-chart-line text-3xl text-blue-600"></i>
+                  <div>
+                    <h3 class="text-lg font-semibold text-blue-800">Lucro</h3>
+                    <p class="text-sm text-blue-600">Faturamento - Custo</p>
+                  </div>
                 </div>
+              </ng-template>
+              <div class="text-center py-4">
+                <p
+                  class="text-3xl font-bold"
+                  [ngClass]="{
+                    'text-blue-700': dadosMesAnterior.lucro >= 0,
+                    'text-red-700': dadosMesAnterior.lucro < 0,
+                  }"
+                >
+                  {{ dadosMesAnterior.lucro | currency: 'BRL' }}
+                </p>
               </div>
-            </ng-template>
-            <div class="text-center py-4">
-              <p
-                class="text-3xl font-bold"
-                [ngClass]="{
-                  'text-blue-700': dadosMesAtual.lucro >= 0,
-                  'text-red-700': dadosMesAtual.lucro < 0,
-                }"
-              >
-                {{ dadosMesAtual.lucro | currency: 'BRL' }}
-              </p>
-            </div>
-          </p-card>
-        </div>
+            </p-card>
+          </div>
+        } @else {
+          <div class="flex justify-center items-center py-12">
+            <p-progressSpinner />
+          </div>
+        }
       </div>
     } @else if (dadosVisaoGeral) {
       <div class="flex flex-col w-full">

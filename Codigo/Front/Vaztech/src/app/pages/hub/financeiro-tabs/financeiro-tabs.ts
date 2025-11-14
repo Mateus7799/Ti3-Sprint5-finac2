@@ -42,6 +42,7 @@ export class FinanceiroTabsComponent implements OnInit {
   toastService = inject(MessageService);
 
   dadosMesAtual: DadosFinanceirosMes | null = null;
+  dadosMesAnterior: DadosFinanceirosMes | null = null;
   dadosComparacao: ComparacaoMeses | null = null;
 
   modalSeletorMesAberto: boolean = false;
@@ -79,12 +80,21 @@ export class FinanceiroTabsComponent implements OnInit {
     }
   }
 
+  calcularMesAnterior(ano: number, mes: number): { ano: number; mes: number } {
+    if (mes === 1) {
+      return { ano: ano - 1, mes: 12 };
+    }
+    return { ano, mes: mes - 1 };
+  }
+
   carregarMesAtual(): void {
     const dataAtual = new Date();
     const mesAtual = dataAtual.getMonth() + 1;
     const anoAtual = dataAtual.getFullYear();
     this.mesSelecionado = mesAtual;
     this.anoSelecionado = anoAtual;
+
+    const mesAnterior = this.calcularMesAnterior(anoAtual, mesAtual);
 
     this.financeiroService.buscarDadosMes(anoAtual, mesAtual).subscribe({
       next: (dados) => {
@@ -106,6 +116,22 @@ export class FinanceiroTabsComponent implements OnInit {
         });
       },
     });
+
+    this.financeiroService.buscarDadosMes(mesAnterior.ano, mesAnterior.mes).subscribe({
+      next: (dados) => {
+        this.dadosMesAnterior = dados;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar dados do mês anterior:', err);
+        this.dadosMesAnterior = {
+          faturamento: 0,
+          custo: 0,
+          lucro: 0,
+          mes: mesAnterior.mes,
+          ano: mesAnterior.ano,
+        };
+      },
+    });
   }
 
   abrirSeletorMes(): void {
@@ -120,11 +146,14 @@ export class FinanceiroTabsComponent implements OnInit {
 
     if (this.vendoVisaoGeral) {
       this.dadosMesAtual = null;
+      this.dadosMesAnterior = null;
       this.buscarDadosVisaoGeral(this.anoSelecionado);
       return;
     }
 
     this.dadosVisaoGeral = undefined;
+
+    const mesAnterior = this.calcularMesAnterior(this.anoSelecionado, this.mesSelecionado);
 
     this.financeiroService.buscarDadosMes(this.anoSelecionado, this.mesSelecionado).subscribe({
       next: (dados) => {
@@ -151,6 +180,22 @@ export class FinanceiroTabsComponent implements OnInit {
           summary: 'Dados não disponíveis',
           detail: 'Exibindo valores zerados para o mês selecionado.',
         });
+      },
+    });
+
+    this.financeiroService.buscarDadosMes(mesAnterior.ano, mesAnterior.mes).subscribe({
+      next: (dados) => {
+        this.dadosMesAnterior = dados;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar dados do mês anterior:', err);
+        this.dadosMesAnterior = {
+          faturamento: 0,
+          custo: 0,
+          lucro: 0,
+          mes: mesAnterior.mes,
+          ano: mesAnterior.ano,
+        };
       },
     });
   }
