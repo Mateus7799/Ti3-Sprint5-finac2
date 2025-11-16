@@ -41,4 +41,14 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
             "ORDER BY MONTH(s.dataFim) ASC")
     List<FaturamentoPorMesDTO> findValorByAnoGroupByMes(@Param("tipo") Integer tipo,
                                                         @Param("ano") Integer ano);
+
+    @Query("SELECT s FROM Servico s " +
+            "WHERE s.produto.id = :produtoId " +
+            "ORDER BY s.dataInicio DESC")
+    List<Servico> findByProdutoId(@Param("produtoId") Integer produtoId);
+
+    @Query("SELECT s FROM Servico s " +
+            "WHERE s.pessoa.id = :pessoaId " +
+            "ORDER BY s.dataInicio DESC")
+    List<Servico> findByPessoaId(@Param("pessoaId") Integer pessoaId);
 }

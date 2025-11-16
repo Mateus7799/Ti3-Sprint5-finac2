@@ -27,7 +27,6 @@ public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
                                             @Param("max") BigDecimal max,
                                             Pageable pageable);
 
-
     @Query("SELECT COALESCE(SUM(o.valor), 0.0) FROM Operacao o " +
             "WHERE o.tipo = :tipo " +
             "AND YEAR(o.dataHoraTransacao) = :ano " +
@@ -36,7 +35,6 @@ public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
                                           @Param("ano") Integer ano,
                                           @Param("mes") Integer mes);
 
-
     @Query("SELECT MONTH(o.dataHoraTransacao) as mes, COALESCE(SUM(o.valor), 0.0) as total " +
             "FROM Operacao o " +
             "WHERE o.tipo = :tipo AND YEAR(o.dataHoraTransacao) = :ano " +
@@ -44,5 +42,22 @@ public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
             "ORDER BY MONTH(o.dataHoraTransacao) ASC")
     List<FaturamentoPorMesDTO> findFaturamentoByAnoGroupByMes(@Param("tipo") Integer tipo, @Param("ano") Integer ano);
 
+    @Query("SELECT o FROM Operacao o " +
+            "WHERE o.funcionario.id = :funcionarioId " +
+            "AND o.dataHoraTransacao BETWEEN :dataInicio AND :dataFim " +
+            "ORDER BY o.dataHoraTransacao DESC")
+    List<Operacao> findByFuncionarioAndDateRange(@Param("funcionarioId") Integer funcionarioId,
+                                                   @Param("dataInicio") java.time.LocalDateTime dataInicio,
+                                                   @Param("dataFim") java.time.LocalDateTime dataFim);
+
+    @Query("SELECT o FROM Operacao o " +
+            "WHERE o.produto.id = :produtoId " +
+            "ORDER BY o.dataHoraTransacao DESC")
+    List<Operacao> findByProdutoId(@Param("produtoId") Integer produtoId);
+
+    @Query("SELECT o FROM Operacao o " +
+            "WHERE o.pessoa.id = :pessoaId " +
+            "ORDER BY o.dataHoraTransacao DESC")
+    List<Operacao> findByPessoaId(@Param("pessoaId") Integer pessoaId);
 
 }

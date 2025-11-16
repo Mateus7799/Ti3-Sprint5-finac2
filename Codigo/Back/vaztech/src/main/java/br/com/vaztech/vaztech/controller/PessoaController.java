@@ -30,12 +30,6 @@ public class PessoaController {
         return pessoaService.buscarPessoasPaginadas(searchTerm, page, size);
     }
 
-        @GetMapping("/aniversariantes-semana")
-    public ResponseEntity<List<PessoaAniversarioResponseDTO>> getAniversariantesSemana() {
-        List<PessoaAniversarioResponseDTO> lista = pessoaService.buscarAniversariantesDaSemana();
-        return ResponseEntity.ok(lista);
-    }
-
     @PostMapping
     public ResponseEntity<PessoaResponseDTO> criarPessoa(@Valid @RequestBody PessoaAddRequestDTO dto) throws ResponseStatusException {
         PessoaResponseDTO response = pessoaService.criarPessoa(dto);

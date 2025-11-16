@@ -23,4 +23,13 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Intege
            "LOWER(f.nome) LIKE LOWER(CONCAT('%', :query, '%')) " +
            "OR f.cpf LIKE CONCAT('%', :query, '%'))")
     List<Funcionario> findTop50ByNomeOrCpfLikeAndAtivo(@Param("query") String query);
+
+    @Query("SELECT f FROM Funcionario f " +
+            "WHERE f.status = 1 " +
+            "AND FUNCTION('DAY', f.dataNascimento) >= :startDay " +
+            "AND FUNCTION('DAY', f.dataNascimento) <= :endDay " +
+            "AND FUNCTION('MONTH', f.dataNascimento) = :month")
+    List<Funcionario> findAniversariantesNoMes(@Param("startDay") int startDay,
+                                               @Param("endDay") int endDay,
+                                               @Param("month") int month);
 }

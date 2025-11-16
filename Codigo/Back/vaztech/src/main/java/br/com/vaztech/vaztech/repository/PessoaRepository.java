@@ -1,6 +1,5 @@
 package br.com.vaztech.vaztech.repository;
 
-import br.com.vaztech.vaztech.dto.PessoaAniversarioResponseDTO;
 import br.com.vaztech.vaztech.entity.Pessoa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +26,7 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Integer> {
             "WHERE FUNCTION('DAY', p.dataNascimento) >= :startDay " +
             "AND FUNCTION('DAY', p.dataNascimento) <= :endDay " +
             "AND FUNCTION('MONTH', p.dataNascimento) = :month ")
-    List<PessoaAniversarioResponseDTO> findAniversariantesNoMes(@Param("startDay") int startDay,
-                                                                @Param("endDay") int endDay,
-                                                                @Param("month") int month);
+    List<Pessoa> findAniversariantesNoMes(@Param("startDay") int startDay,
+                                          @Param("endDay") int endDay,
+                                          @Param("month") int month);
 }
