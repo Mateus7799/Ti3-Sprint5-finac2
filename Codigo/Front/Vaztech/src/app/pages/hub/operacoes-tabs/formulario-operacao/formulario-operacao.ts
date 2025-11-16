@@ -30,6 +30,7 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { MessageModule } from 'primeng/message';
 import { FormaPagamento } from '../../../../models/forma-pagamento.model';
 import { UtilsService } from '../../../../services/utils.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 type TipoOperacaoOpcao = {
   label: string;
@@ -54,6 +55,7 @@ type TipoOperacaoOpcao = {
     SelectModule,
     AutoCompleteModule,
     ButtonModule,
+    TooltipModule,
     InputTextModule,
     ToggleButtonModule,
     TextareaModule,
@@ -94,7 +96,7 @@ export class FormularioOperacao implements OnInit {
   cadastrarNovoProdutoRecebido: boolean = false;
 
   formasPagamento: FormaPagamento[] = [];
-  formaPagamentoSelecionada: FormaPagamento | undefined;
+  formaPagamentoSelecionada: number | undefined;
 
   ngOnInit() {
     this.buscarFormasPagamento();
@@ -165,7 +167,6 @@ export class FormularioOperacao implements OnInit {
           summary: 'Ocorreu um erro',
           detail: err.error.message,
         });
-        form.resetForm();
       },
     });
   }
@@ -195,8 +196,6 @@ export class FormularioOperacao implements OnInit {
           summary: 'Ocorreu um erro',
           detail: err.error.message,
         });
-        this.operacaoEdicao = undefined;
-        form.resetForm();
       },
     });
   }
@@ -251,7 +250,6 @@ export class FormularioOperacao implements OnInit {
           summary: 'Ocorreu um erro',
           detail: err.error.message,
         });
-        form.resetForm();
       },
     });
   }
@@ -284,6 +282,9 @@ export class FormularioOperacao implements OnInit {
     this.utilsService.buscarFormasPagamento().subscribe({
       next: (fp: FormaPagamento[]) => {
         this.formasPagamento = [...fp];
+        if (!this.formaPagamentoSelecionada && this.operacaoEdicao) {
+          this.formaPagamentoSelecionada = this.operacaoEdicao.formaPagamento;
+        }
       },
       error: (err) => {
         console.error(err);

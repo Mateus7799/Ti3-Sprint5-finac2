@@ -1,9 +1,6 @@
 package br.com.vaztech.vaztech.controller;
 
-import br.com.vaztech.vaztech.dto.PessoaAddRequestDTO;
-import br.com.vaztech.vaztech.dto.PessoaBuscarResponseDTO;
-import br.com.vaztech.vaztech.dto.PessoaResponseDTO;
-import br.com.vaztech.vaztech.dto.PessoaUpdateRequestDTO;
+import br.com.vaztech.vaztech.dto.*;
 import br.com.vaztech.vaztech.service.PessoaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +28,12 @@ public class PessoaController {
                                                                 @RequestParam(defaultValue = "0") int page,
                                                                 @RequestParam(defaultValue = "10") int size) {
         return pessoaService.buscarPessoasPaginadas(searchTerm, page, size);
+    }
+
+        @GetMapping("/aniversariantes-semana")
+    public ResponseEntity<List<PessoaAniversarioResponseDTO>> getAniversariantesSemana() {
+        List<PessoaAniversarioResponseDTO> lista = pessoaService.buscarAniversariantesDaSemana();
+        return ResponseEntity.ok(lista);
     }
 
     @PostMapping

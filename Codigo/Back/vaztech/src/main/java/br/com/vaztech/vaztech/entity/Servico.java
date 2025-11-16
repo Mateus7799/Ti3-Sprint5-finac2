@@ -25,7 +25,7 @@ public class Servico {
     private Produto produto;
 
     @Column(name = "tipo", nullable = false)
-    private Integer tipo;
+    private Integer tipo; // Externo = 1; Interno = 2;
 
     @Column(name = "valor", nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;

@@ -19,6 +19,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PopoverModule } from 'primeng/popover';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-operacoes-tabs',
@@ -27,6 +29,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
     CommonModule,
     PaginatorModule,
     TooltipModule,
+    InputNumberModule,
     ButtonModule,
     InputTextModule,
     DialogModule,
@@ -34,6 +37,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
     ToolbarModule,
     IconFieldModule,
     FormsModule,
+    PopoverModule,
     InputIconModule,
     MessageModule,
     DatePipe,
@@ -69,6 +73,9 @@ export class OperacoesTabsComponent implements OnInit {
 
   operacoesEdicao: Operacao[] = [];
   operacaoValidandoCodigo: Operacao | undefined = undefined;
+
+  minimoValorFiltro: number | undefined;
+  maximoValorFiltro: number | undefined;
 
   ngOnInit(): void {
     this.buscarTodasOperacoes();
@@ -121,6 +128,8 @@ export class OperacoesTabsComponent implements OnInit {
         this.paginaAtualCompra,
         this.itensPorPaginaCompra,
         this.searchText,
+        this.minimoValorFiltro,
+        this.maximoValorFiltro,
       )
       .subscribe({
         next: (response: OperacoesReq) => {
@@ -130,13 +139,27 @@ export class OperacoesTabsComponent implements OnInit {
           });
           this.totalRegistrosCompra = response.totalElements;
         },
+        error: (err) => {
+          this.toastService.add({
+            severity: 'error',
+            summary: 'Ocorreu um erro ao carregar as operações',
+            detail: err.error.message,
+          });
+        },
       });
   }
 
   buscarOperacoesVenda(pagina?: number) {
     this.paginaAtualVenda = pagina ?? this.paginaAtualVenda;
     this.operacoesService
-      .listarOperacoes('vendas', this.paginaAtualVenda, this.itensPorPaginaVenda, this.searchText)
+      .listarOperacoes(
+        'vendas',
+        this.paginaAtualVenda,
+        this.itensPorPaginaVenda,
+        this.searchText,
+        this.minimoValorFiltro,
+        this.maximoValorFiltro,
+      )
       .subscribe({
         next: (response: OperacoesReq) => {
           this.operacoesVenda = response.content.map((o) => {
@@ -144,6 +167,13 @@ export class OperacoesTabsComponent implements OnInit {
             return o;
           });
           this.totalRegistrosVenda = response.totalElements;
+        },
+        error: (err) => {
+          this.toastService.add({
+            severity: 'error',
+            summary: 'Ocorreu um erro ao carregar as operações',
+            detail: err.error.message,
+          });
         },
       });
   }
@@ -170,6 +200,8 @@ export class OperacoesTabsComponent implements OnInit {
 
   onLimparPesquisa() {
     this.searchText = '';
+    this.minimoValorFiltro = undefined;
+    this.maximoValorFiltro = undefined;
     this.buscarTodasOperacoes();
   }
 
@@ -186,5 +218,13 @@ export class OperacoesTabsComponent implements OnInit {
       this.toastService.add(event.toast);
     }
     this.abaAtual = 0;
+  }
+
+  get haParametrosDeBusca() {
+    return (
+      this.searchText.length > 0 ||
+      this.minimoValorFiltro != undefined ||
+      this?.maximoValorFiltro != undefined
+    );
   }
 }

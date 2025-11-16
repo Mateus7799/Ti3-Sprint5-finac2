@@ -41,23 +41,28 @@ export class FormularioEstoque implements OnInit {
 
   toastService = inject(MessageService);
   produtoService = inject(ProdutoService);
-  statusSelecionado: number = 0;
+  statusSelecionado: number = 1;
 
   carregando: boolean = false;
 
   ngOnInit(): void {
-    if (this.itemEdicao) {
-      this.statusSelecionado =
-        this.opcoesStatus.find((status) => status.id === this.itemEdicao!.status?.id)?.id ??
-        this.statusPadrao.id;
-    }
+    this.buscarStatusOpcoes();
+    this.statusSelecionado = this.itemEdicao?.status ?? this.statusPadrao?.id;
+  }
+
+  buscarStatusOpcoes() {
+    this.produtoService.buscarStatusProdutos().subscribe({
+      next: (status) => {
+        this.opcoesStatus = [...status];
+      },
+    });
   }
 
   enviarFormulario(form: NgForm) {
     if (form.invalid) return;
-    const item = { status: this.statusPadrao, ...(<Produto>form.value) };
-    console.log(item);
+    let item = { status: this.statusSelecionado ?? this.statusPadrao.id, ...(<Produto>form.value) };
     if (this.itemEdicao) {
+      item = { ...item, id: this.itemEdicao.id };
       this.editarItem(item);
       return;
     }

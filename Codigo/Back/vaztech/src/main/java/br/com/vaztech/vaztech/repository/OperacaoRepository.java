@@ -11,15 +11,18 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface OperacaoRepository extends JpaRepository<Operacao, Integer> {
-    @Query("""
-    FROM Operacao o
-    WHERE o.tipo = :tipo
-      AND (:id IS NULL OR o.id = :id)
-      AND (:min IS NULL OR o.valor >= :min)
-      AND (:max IS NULL OR o.valor <= :max)
-    """)
+    @Query("FROM Operacao o " +
+            "WHERE o.tipo = :tipo " +
+            "AND (" +
+            "     :searchTerm IS NULL OR :searchTerm = '' OR " +
+            "     LOWER(o.produto.numeroSerie) LIKE LOWER(CONCAT(:searchTerm, '%')) OR " +
+            "     LOWER(o.pessoa.nome) LIKE LOWER(CONCAT(:searchTerm, '%')) OR " +
+            "     LOWER(o.funcionario.nome) LIKE LOWER(CONCAT(:searchTerm, '%'))" +
+            ") " +
+            "AND (:min IS NULL OR o.valor >= :min) " +
+            "AND (:max IS NULL OR o.valor <= :max)")
     Page<Operacao> buscarOperacoesPaginadas(@Param("tipo") Integer tipo,
-                                            @Param("id") Integer id,
+                                            @Param("searchTerm") String searchTerm,
                                             @Param("min") BigDecimal min,
                                             @Param("max") BigDecimal max,
                                             Pageable pageable);

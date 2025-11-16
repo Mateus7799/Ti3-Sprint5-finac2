@@ -5,6 +5,7 @@ import br.com.vaztech.vaztech.entity.*;
 import br.com.vaztech.vaztech.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -38,13 +39,36 @@ public class OperacaoService {
     @Autowired
     MetodoPagamentoRepository metodoPagamentoRepository;
 
+    @Autowired
+    StatusProdutoRepository statusProdutoRepository;
+
     private static final Integer VENDA = 0;
     private static final Integer COMPRA = 1;
 
-    public Page<OperacaoResponseDTO> buscarOperacoesPaginadas(Integer tipo, Integer id, BigDecimal min, BigDecimal max, int page, int size) {
+    public Page<OperacaoResponseDTO> buscarOperacoesPaginadas(Integer tipo, String searchTerm, BigDecimal min, BigDecimal max, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "dataHoraTransacao");
 
-        return operacaoRepository.buscarOperacoesPaginadas(tipo, id, min, max, pageRequest)
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            try {
+                Integer id = Integer.parseInt(searchTerm.trim());
+                Optional<Operacao> operacaoOpt = operacaoRepository.findById(id);
+
+                if (operacaoOpt.isPresent()) {
+                    Operacao operacao = operacaoOpt.get();
+
+                    boolean matchesTipo = operacao.getTipo().equals(tipo);
+
+                    if (matchesTipo) {
+                        List<OperacaoResponseDTO> resultado = List.of(new OperacaoResponseDTO(operacao));
+                        return new PageImpl<>(resultado, pageRequest, 1);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // searchTerm não é um número, continua com a busca normal
+            }
+        }
+
+        return operacaoRepository.buscarOperacoesPaginadas(tipo, searchTerm, min, max, pageRequest)
                 .map(OperacaoResponseDTO::new);
     }
 
@@ -106,6 +130,18 @@ public class OperacaoService {
 
             MetodoPagamento metodoPagamento = metodoPagamentoRepository.findById(dto.metodoPagamento())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Método de pagamento não encontrado com ID: " + dto.metodoPagamento()));
+
+            if (dto.tipo().equals(VENDA)) {
+                StatusProduto statusVendido = statusProdutoRepository.findById(3)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status 'Vendido' (ID 3) não encontrado."));
+                produto.setStatus(statusVendido);
+            } else if (dto.tipo().equals(COMPRA)) {
+                StatusProduto statusEstoque = statusProdutoRepository.findById(1)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status 'Em estoque' (ID 1) não encontrado."));
+                produto.setStatus(statusEstoque);
+            }
+
+            produtoRepository.save(produto);
 
             Operacao operacao = new Operacao();
             operacao.setProduto(produto);
@@ -191,8 +227,8 @@ public class OperacaoService {
             operacaoCompra = operacaoRepository.save(operacaoCompra);
             operacaoVenda = operacaoRepository.save(operacaoVenda);
 
-            operacaoCompra.setObservacoes("Refernte a operacão de venda de id: " + operacaoVenda.getId());
-            operacaoVenda.setObservacoes("Refernte a operacão de compra de id: " + operacaoCompra.getId());
+            operacaoCompra.setObservacoes("Referente a operação de venda de id: " + operacaoVenda.getId());
+            operacaoVenda.setObservacoes("Referente a operação de compra de id: " + operacaoCompra.getId());
 
             operacaoRepository.save(operacaoCompra);
             operacaoRepository.save(operacaoVenda);

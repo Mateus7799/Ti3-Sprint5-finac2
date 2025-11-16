@@ -13,11 +13,13 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { CardModule } from 'primeng/card';
-import { PaginatorModule } from 'primeng/paginator';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
 import { FluidModule } from 'primeng/fluid';
 import { FieldsetModule } from 'primeng/fieldset';
+import { TruncatePipe } from '../../../pipes/truncate.pipe';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-servicos-tabs',
@@ -33,12 +35,14 @@ import { FieldsetModule } from 'primeng/fieldset';
     ToolbarModule,
     IconFieldModule,
     InputTextModule,
+    ToggleSwitchModule,
     TabsModule,
     CardModule,
     PaginatorModule,
     FieldsetModule,
     InputIconModule,
     CurrencyPipe,
+    TruncatePipe,
     AvatarModule,
   ],
   templateUrl: './servicos-tabs.html',
@@ -61,21 +65,45 @@ export class ServicosTabsComponent implements OnInit {
   itensPorPagina: number = 6;
   totalRegistros: number = 0;
 
+  apenasEmProgresso: boolean = false;
+
   ngOnInit(): void {
     this.buscarStatusServico();
     this.buscarServicos();
   }
 
-  buscarServicos() {
-    this.servicoService.buscarServicos().subscribe({
-      next: (servicosReq: ServicosReqDTO) => {
-        this.servicos = servicosReq.content;
-        this.totalRegistros = servicosReq.totalElements;
-      },
-      error: (err) => {
-        console.error(err);
-      },
-    });
+  onEditarServico(servico: Servico) {
+    this.servicosEdit.push(structuredClone(servico));
+    this.abaAtual = this.servicosEdit.length + 1;
+  }
+
+  buscarServicos(pagina?: number, size?: number) {
+    this.servicoService
+      .buscarServicos(
+        pagina ?? this.paginaAtual,
+        size ?? this.itensPorPagina,
+        this.searchText,
+        this.apenasEmProgresso,
+      )
+      .subscribe({
+        next: (servicosReq: ServicosReqDTO) => {
+          console.log(servicosReq);
+          this.servicos = servicosReq.content.map((s) => {
+            if (s.dataInicio) s.dataInicio = new Date(s.dataInicio + 'T00:00:00');
+            if (s.dataFim) s.dataFim = new Date(s.dataFim + 'T00:00:00');
+            return s;
+          });
+          this.totalRegistros = servicosReq.totalElements;
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.add({
+            severity: 'error',
+            summary: 'O carregamento dos serviços falhou',
+            detail: err.error.message,
+          });
+        },
+      });
   }
 
   buscarStatusServico() {
@@ -85,25 +113,76 @@ export class ServicosTabsComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
+        this.toastService.add({
+          severity: 'error',
+          summary: 'Ocorreu um erro!',
+          detail: err.error.message,
+        });
       },
     });
   }
 
   onPesquisar() {
-    // TODO: implementar
+    this.buscarServicos();
   }
 
-  onLimparPesquisa() {} // TODO: Implementar
-
-  onPageChange(ev: any) {
-    // TODO: mudar any
+  onLimparPesquisa() {
+    this.searchText = '';
+    this.buscarServicos();
   }
 
-  fecharAba(index: number, ev: any) {}
+  onPageChange(event: PaginatorState) {
+    this.paginaAtual = event.page || 0;
+    this.itensPorPagina = event.rows || 4;
+    if (this.searchText.length <= 0) {
+      this.buscarServicos();
+    }
+  }
+
+  fecharAba(index: number, ev: any) {
+    if (index >= 0) this.servicosEdit.splice(index, 1);
+    console.log(index);
+    console.log(this.servicosEdit);
+    if (ev?.reload) {
+      this.buscarServicos();
+    }
+    if (ev?.toast) {
+      this.toastService.add(ev.toast);
+    }
+    this.abaAtual = 0;
+  }
+
+  irParaCadastro() {
+    this.abaAtual = 1;
+  }
 
   get finalizadoStatusId() {
     return (
       this.statusServico.find((status) => status.nome.toLowerCase().includes('finalizado'))?.id ?? 1
     );
+  }
+
+  onConcluirServico(servico: Servico) {
+    this.servicoService.concluirServico(servico).subscribe({
+      next: () => {
+        this.buscarServicos();
+        this.toastService.add({
+          severity: 'success',
+          summary: 'Serviço concluído!',
+        });
+      },
+      error: (err) => {
+        console.log(err);
+        this.toastService.add({
+          severity: 'error',
+          summary: 'Não foi possível concluir o serviço',
+          detail: err.error.message,
+        });
+      },
+    });
+  }
+
+  getStatusLabel(id: number) {
+    return this.statusServico.find((status) => status.id === id)?.nome ?? 'Indefinido';
   }
 }

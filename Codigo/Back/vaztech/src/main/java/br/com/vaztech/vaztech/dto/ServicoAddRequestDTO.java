@@ -22,11 +22,7 @@ public record ServicoAddRequestDTO(
 
         LocalDate dataInicio,
 
-        LocalDate dataFim,
-
         String observacoes,
-
-        Integer idStatus,
 
         Integer metodoPagamento,
 

@@ -1,6 +1,9 @@
 export type PessoaResponse = {
   id: number;
   nome: string;
+  contato: string;
+  endereco?: string;
+  observacoes?: string;
   cpfCnpj: string;
   dataNascimento: Date | null;
   origem: string | null;
@@ -11,6 +14,9 @@ export type CadastrarPessoaBody = {
   cpfCnpj: string;
   dataNascimento: Date | null;
   origem: string | null;
+  contato: string;
+  endereco: string | null;
+  observacoes: string | null;
 };
 
 export type AlterarPessoaBody = {
@@ -19,6 +25,9 @@ export type AlterarPessoaBody = {
   cpfCnpj: string;
   dataNascimento: Date | null;
   origem: string | null;
+  contato: string;
+  endereco: string | null;
+  observacoes: string | null;
 };
 
 export type PessoasReqDTO = {

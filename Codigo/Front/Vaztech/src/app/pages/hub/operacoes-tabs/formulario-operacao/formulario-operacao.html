@@ -83,7 +83,7 @@
           [ngModel]="operacaoEdicao?.funcionario"
           name="funcionario"
           optionLabel="nome"
-          inputStyleClass="w-56"
+          inputStyleClass="w-64"
           [delay]="500"
           [disabled]="!!operacaoEdicao"
           [suggestions]="funcionariosDisponiveis"
@@ -106,7 +106,7 @@
           [suggestions]="pessoasDisponiveis"
           [forceSelection]="true"
           (completeMethod)="queryPessoas($event)"
-          inputStyleClass="w-56"
+          inputStyleClass="w-64"
           required
           inputId="pessoa"
           placeholder="Digite para procurar..."
@@ -134,6 +134,13 @@
         ></p-autocomplete>
         <label for="produto">{{ estouTrocando ? 'Produto Vendido' : 'Produto' }}</label>
       </p-iftalabel>
+      @if (tipoOperacaoSelecionado === 0) {
+        <i
+          class="pi pi-info-circle"
+          style="font-size: 1.5rem; align-items: center; display: flex; color: var(--p-neutral-400)"
+          pTooltip="Em operações de venda apenas produtos em estoque são exibidos!"
+        ></i>
+      }
       @if (estouTrocando) {
         <!-- Produto Recebido -->
         <p-iftalabel>
@@ -213,7 +220,7 @@
             placeholder="..."
             type="text"
             pInputText
-            [(ngModel)]="produtoInput.value"
+            ngModel
             name="numeroSerieProduto"
             required
             class="w-72"

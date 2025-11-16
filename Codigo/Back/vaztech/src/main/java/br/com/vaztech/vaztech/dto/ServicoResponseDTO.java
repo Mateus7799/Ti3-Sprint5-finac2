@@ -14,8 +14,8 @@ public record ServicoResponseDTO(
         LocalDate dataInicio,
         LocalDate dataFim,
         String observacoes,
-        String status,
-        String metodoPagamento
+        Integer status,
+        Integer formaPagamento
 ) {
     public ServicoResponseDTO(Servico servico) {
         this(
@@ -27,8 +27,8 @@ public record ServicoResponseDTO(
                 servico.getDataInicio(),
                 servico.getDataFim(),
                 servico.getObservacoes(),
-                servico.getStatus() != null ? servico.getStatus().getNome() : null,
-                servico.getMetodoPagamento() != null ? servico.getMetodoPagamento().getNome() : null
+                servico.getStatus() != null ? servico.getStatus().getId() : null,
+                servico.getMetodoPagamento() != null ? servico.getMetodoPagamento().getId() : null
         );
     }
 }

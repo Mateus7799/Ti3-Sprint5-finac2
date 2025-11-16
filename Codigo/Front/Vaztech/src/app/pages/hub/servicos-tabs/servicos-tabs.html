@@ -5,12 +5,18 @@
       <section class="flex space-x-4">
         <p-iconfield iconPosition="left">
           <p-inputicon class="pi pi-search" />
-          <input [(ngModel)]="searchText" type="text" placeholder="ID..." pInputText class="w-96" />
+          <input
+            [(ngModel)]="searchText"
+            type="text"
+            placeholder="ID / nº série produto / cliente..."
+            pInputText
+            class="w-96"
+          />
         </p-iconfield>
         <p-button
           [outlined]="true"
           [rounded]="true"
-          severity="secondary"
+          severity="primary"
           label="Pesquisar"
           (click)="onPesquisar()"
         ></p-button>
@@ -24,10 +30,14 @@
             (click)="onLimparPesquisa()"
           ></p-button>
         }
+        <div class="flex items-center gap-2">
+          <p-toggleswitch [(ngModel)]="apenasEmProgresso" size="small" />
+          <span class="text-center text-sm font-semibold text-primary">Apenas Em Andamento</span>
+        </div>
       </section>
     </ng-template>
     <ng-template #end>
-      <p-button label="Cadastrar Serviço" icon="pi pi-plus"></p-button>
+      <p-button label="Cadastrar Serviço" (click)="irParaCadastro()" icon="pi pi-plus"></p-button>
     </ng-template>
   </p-toolbar>
 
@@ -36,7 +46,7 @@
       <p-tab [value]="0">Serviços</p-tab>
       <p-tab [value]="1">Cadastrar Serviço</p-tab>
       @for (servicoEdit of servicosEdit; track servicoEdit.id; let index = $index) {
-        <p-tab [value]="index + 3"
+        <p-tab [value]="index + 2"
           >Serviço #{{ servicoEdit.id }}
           <p-button
             icon="pi pi-times"
@@ -66,15 +76,21 @@
                         <p-message
                           styleClass="w-full bg-red"
                           size="small"
-                          [severity]="servico.status.id === finalizadoStatusId ? 'success' : 'info'"
-                          >{{ servico.status.nome }}</p-message
+                          [severity]="servico.status === finalizadoStatusId ? 'success' : 'info'"
+                          >{{ getStatusLabel(servico.status) }}
+                          {{
+                            servico.status === finalizadoStatusId
+                              ? `em ${(servico.dataFim | date: 'dd/MM/yyyy')}`
+                              : ''
+                          }}</p-message
                         >
                       </div>
-                      @if (!(servico.status.id === finalizadoStatusId)) {
+                      @if (!(servico.status === finalizadoStatusId)) {
                         <p-button
                           icon="pi pi-check"
                           [outlined]="true"
                           severity="success"
+                          (click)="onConcluirServico(servico)"
                           [rounded]="true"
                           size="small"
                         ></p-button>
@@ -96,18 +112,37 @@
                         icon="pi pi-pen-to-square"
                         [text]="true"
                         severity="secondary"
+                        (click)="onEditarServico(servico)"
                         [rounded]="true"
                       ></p-button>
                     </section>
                   </ng-template>
                   <section class="flex flex-col w-full">
                     <h3><strong>Produto:</strong> {{ servico.produto.numeroSerie }}</h3>
-                    <h3><strong>Cliente:</strong> {{ servico.pessoa.nome }}</h3>
-                    <p-fieldset legend="Notas do Serviço">
-                      <div class="p-0">
-                        {{ servico.observacoes }}
-                      </div>
-                    </p-fieldset>
+                    @if (servico?.pessoa) {
+                      <h3><strong>Cliente:</strong> {{ servico.pessoa.nome }}</h3>
+                    } @else {
+                      <h3 class="text-neutral-500 font-semibold">
+                        Atenção! Esse é um serviço interno
+                      </h3>
+                    }
+                    <h3>
+                      <strong>Data de Início:</strong>
+                      {{ servico.dataInicio | date: 'dd/MM/yyyy' }}
+                    </h3>
+
+                    @if (servico.observacoes) {
+                      <p-fieldset legend="Notas do Serviço">
+                        <div class="p-0">
+                          {{ servico.observacoes | truncate: 75 }}
+                        </div>
+                      </p-fieldset>
+                      @if (servico.observacoes.length > 75) {
+                        <p class="text-sm text-neutral-500 font-semibold">
+                          Para ver o resto das observações, clique para editar!
+                        </p>
+                      }
+                    }
                   </section>
                 </p-card>
               }
@@ -146,11 +181,14 @@
       </p-tabpanel>
       <p-tabpanel [value]="1">
         <!-- Aba do Formulario de Cadastrar -->
-        <app-formulario-servicos (fecharAba)="fecharAba(1, $event)"></app-formulario-servicos>
+        <app-formulario-servicos (fecharAba)="fecharAba(-1, $event)"></app-formulario-servicos>
       </p-tabpanel>
       @for (servicoEdit of servicosEdit; track servicoEdit.id; let index = $index) {
         <p-tabpanel [value]="index + 2">
-          <app-formulario-servicos (fecharAba)="fecharAba(1, $event)"></app-formulario-servicos>
+          <app-formulario-servicos
+            [servicoEdicao]="servicoEdit"
+            (fecharAba)="fecharAba(index, $event)"
+          ></app-formulario-servicos>
         </p-tabpanel>
       }
     </p-tabpanels>

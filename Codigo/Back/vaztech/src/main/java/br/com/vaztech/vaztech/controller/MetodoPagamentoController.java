@@ -19,7 +19,7 @@ public class MetodoPagamentoController {
     private MetodoPagamentoService metodoPagamentoService;
 
     @GetMapping
-    public ResponseEntity<List<MetodoPagamentoDTO>> listarProdutoStatus() {
+    public ResponseEntity<List<MetodoPagamentoDTO>> listarMetodosPagamento() {
         List<MetodoPagamentoDTO> response = metodoPagamentoService.listarMetodosPagamento();
         return ResponseEntity.ok(response);
     }

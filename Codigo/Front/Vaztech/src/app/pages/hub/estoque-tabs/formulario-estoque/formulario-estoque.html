@@ -6,9 +6,7 @@
   (ngSubmit)="enviarFormulario(form)"
 >
   <div class="flex gap-4 w-full">
-    <!-- <fieldset class="border-2 p-4 w-full border-primary-300 rounded-xl flex"> -->
     <p-fieldset legend="Informações sobre o item">
-      <!-- <legend class="text-primary font-semibold px-2">Informações sobre o item</legend> -->
       <div class="flex flex-col gap-4 flex-1">
         <div class="flex gap-4">
           <p-iftalabel class="flex flex-1">
@@ -67,26 +65,23 @@
             />
             <label for="cor">Cor</label>
           </p-iftalabel>
-          @if (itemEdicao) {
-            <p-iftalabel>
-              <p-select
-                [options]="opcoesStatus"
-                [(ngModel)]="statusSelecionado"
-                optionLabel="nome"
-                optionValue="id"
-                name="status"
-                required
-              />
-              <label for="status">Status</label>
-            </p-iftalabel>
-          }
+          <p-iftalabel class="w-full">
+            <p-select
+              [options]="opcoesStatus"
+              [(ngModel)]="statusSelecionado"
+              fluid
+              optionLabel="nome"
+              optionValue="id"
+              name="status"
+              required
+            />
+            <label for="status">Status</label>
+          </p-iftalabel>
         </div>
       </div>
     </p-fieldset>
   </div>
-  <!-- <fieldset class="border-2 py-2 px-4 border-primary-300 rounded-xl flex grow-0"> -->
   <p-fieldset legend="Observações">
-    <!-- <legend class="text-primary font-semibold px-2">Observações</legend> -->
     <p-floatlabel variant="on" class="flex mt-2 flex-1">
       <textarea
         rows="4"

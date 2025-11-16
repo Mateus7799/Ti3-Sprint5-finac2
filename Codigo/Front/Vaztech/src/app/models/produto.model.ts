@@ -6,11 +6,12 @@ export type ProdutoStatus = {
 };
 
 export type Produto = {
+  id?: number;
   numeroSerie: string;
   aparelho: string;
   modelo?: string;
   observacoes?: string;
-  status?: ProdutoStatus;
+  status?: number;
   cor?: string;
 };
 

@@ -21,12 +21,12 @@ public class OperacaoController {
 
     @GetMapping
     public Page<OperacaoResponseDTO> buscarOperacoesPaginadas(@RequestParam(value = "tipo") Integer tipo,
-                                                              @RequestParam(value = "id", required = false) Integer id,
+                                                              @RequestParam(value = "searchTerm", required = false) String searchTerm,
                                                               @RequestParam(value = "min", required = false) BigDecimal min,
                                                               @RequestParam(value = "max", required = false) BigDecimal max,
                                                               @RequestParam(defaultValue = "0") int page,
                                                               @RequestParam(defaultValue = "10") int size) {
-        return operacaoService.buscarOperacoesPaginadas(tipo, id, min, max, page, size);
+        return operacaoService.buscarOperacoesPaginadas(tipo, searchTerm, min, max, page, size);
     }
 
     @GetMapping("/ultimas")

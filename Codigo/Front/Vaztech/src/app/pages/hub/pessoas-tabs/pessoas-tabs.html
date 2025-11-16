@@ -55,29 +55,57 @@
                 />
                 <span class="font-bold text-primary">{{ pessoa.nome }}</span>
               </div>
-              <p-button
-                icon="pi pi-pen-to-square"
-                [text]="true"
-                severity="primary"
-                [rounded]="true"
-                (click)="abrirModalEditar(pessoa)"
-              ></p-button>
+              <div class="flex gap-1">
+                <p-button
+                  icon="pi pi-book"
+                  [text]="true"
+                  severity="primary"
+                  [disabled]="(pessoa.observacoes?.length ?? 0) <= 0"
+                  [rounded]="true"
+                  (click)="pop.toggle($event)"
+                ></p-button>
+                <p-popover #pop>
+                  <h1 class="font-bold">Observações:</h1>
+                  <p class="max-w-64 overflow-x-auto">{{ pessoa.observacoes }}</p>
+                </p-popover>
+                <p-button
+                  icon="pi pi-pen-to-square"
+                  [text]="true"
+                  severity="primary"
+                  [rounded]="true"
+                  (click)="abrirModalEditar(pessoa)"
+                ></p-button>
+              </div>
             </section>
           </ng-template>
           <ng-template #subtitle>
-            <span class="text-sm text-gray-600">{{ pessoa.origem || 'Sem origem definida' }}</span>
+            <span class="text-sm text-gray-600">{{
+              pessoa.endereco || 'Sem endereço definido'
+            }}</span>
           </ng-template>
-          <div class="space-y-2">
-            <p>
-              <strong>{{ pessoa.cpfCnpj.length == 11 ? 'CPF' : 'CNPJ' }}:</strong>
-              {{ pessoa.cpfCnpj | cpfCnpjMask }}
-            </p>
-            @if (pessoa.dataNascimento) {
-              <p class="text-sm text-gray-700">
-                <strong>Data de Nascimento:</strong>
-                {{ pessoa.dataNascimento | date: 'dd/MM/yyyy' }}
+          <div class="flex justify-between">
+            <div class="space-y-2">
+              <p>
+                <strong>{{ pessoa.cpfCnpj.length == 11 ? 'CPF' : 'CNPJ' }}:</strong>
+                {{ pessoa.cpfCnpj | cpfCnpjMask }}
               </p>
-            }
+              @if (!!pessoa.dataNascimento) {
+                <p class="text-sm text-gray-700">
+                  <strong>Data de Nascimento:</strong>
+                  {{ pessoa.dataNascimento | date: 'dd/MM/yyyy' }}
+                </p>
+              }
+            </div>
+            <div class="space-y-2 text-end">
+              <p>
+                <strong>Contato: </strong>
+                {{ pessoa.contato | telefone }}
+              </p>
+              <p class="text-sm text-gray-700">
+                <strong>Origem: </strong>
+                {{ pessoa.origem ?? 'Não definida' }}
+              </p>
+            </div>
           </div>
         </p-card>
       }
@@ -118,68 +146,110 @@
     [modal]="true"
     [(visible)]="modalFormularioAberto"
     [draggable]="false"
-    [style]="{ width: '35rem' }"
+    [style]="{ width: '50rem' }"
   >
     <form
       #pessoaForm="ngForm"
       class="flex flex-col w-full space-y-4"
       (ngSubmit)="enviarFormulario(pessoaForm)"
     >
-      <div class="flex flex-col space-y-2">
-        <label for="nome" class="font-semibold">Nome *</label>
-        <input
-          [ngModel]="editandoPessoa?.nome"
-          required
-          name="nome"
-          id="nome"
-          type="text"
-          placeholder="Nome completo..."
-          pInputText
-        />
-      </div>
+      <section class="flex gap-8 justify-between">
+        <div class="flex-1 flex flex-col gap-2">
+          <div class="flex flex-col space-y-2">
+            <label for="nome" class="font-semibold">Nome *</label>
+            <input
+              [ngModel]="editandoPessoa?.nome"
+              required
+              name="nome"
+              id="nome"
+              type="text"
+              placeholder="Nome completo..."
+              pInputText
+            />
+          </div>
 
-      <div class="flex flex-col space-y-2">
-        <label for="cpfCnpj" class="font-semibold">CPF/CNPJ *</label>
-        <input
-          [ngModel]="editandoPessoa?.cpfCnpj ? (editandoPessoa!.cpfCnpj | cpfCnpjMask) : ''"
-          required
-          #cpfCnpjInput
-          name="cpfCnpj"
-          id="cpfCnpj"
-          type="text"
-          placeholder="000.000.000-00 ou 00.000.000/0001-00"
-          pInputText
-          appCpfCnpjMask
-          maxlength="18"
-        />
-      </div>
+          <div class="flex flex-col space-y-2">
+            <label for="cpfCnpj" class="font-semibold">CPF/CNPJ *</label>
+            <input
+              [ngModel]="editandoPessoa?.cpfCnpj ? (editandoPessoa!.cpfCnpj | cpfCnpjMask) : ''"
+              required
+              #cpfCnpjInput
+              name="cpfCnpj"
+              id="cpfCnpj"
+              type="text"
+              placeholder="000.000.000-00 ou 00.000.000/0001-00"
+              pInputText
+              appCpfCnpjMask
+              appCpfCnpjValidator
+              maxlength="18"
+            />
+          </div>
 
-      @if (cpfCnpjInput.value.length < 15) {
-        <div class="flex flex-col space-y-2">
-          <label for="dataNascimento" class="font-semibold">Data de Nascimento *</label>
-          <p-datepicker
-            placeholder="Data de Nascimento"
-            name="dataNascimento"
-            [ngModel]="editandoPessoa?.dataNascimento"
-            required
-            [showIcon]="true"
-            appendTo="body"
-          ></p-datepicker>
+          @if (cpfCnpjInput.value.length < 15) {
+            <div class="flex flex-col space-y-2">
+              <label for="dataNascimento" class="font-semibold">Data de Nascimento *</label>
+              <p-datepicker
+                placeholder="Data de Nascimento"
+                name="dataNascimento"
+                [ngModel]="editandoPessoa?.dataNascimento"
+                required
+                [showIcon]="true"
+                appendTo="body"
+              ></p-datepicker>
+            </div>
+          }
         </div>
-      }
-
+        <div class="flex-1 gap-2 flex flex-col">
+          <div class="flex flex-col space-y-2">
+            <label for="contato" class="font-semibold">Contato *</label>
+            <p-inputmask
+              [ngModel]="editandoPessoa?.contato"
+              mask="(99) 99999-9999"
+              name="contato"
+              id="contato"
+              required
+              fluid
+              [unmask]="true"
+              type="text"
+              placeholder="(99) 99999-9999..."
+            />
+          </div>
+          <div class="flex flex-col space-y-2">
+            <label for="origem" class="font-semibold">Origem</label>
+            <input
+              [ngModel]="editandoPessoa?.origem"
+              name="origem"
+              id="origem"
+              type="text"
+              placeholder="Origem..."
+              pInputText
+            />
+          </div>
+        </div>
+      </section>
       <div class="flex flex-col space-y-2">
-        <label for="origem" class="font-semibold">Origem</label>
+        <label for="origem" class="font-semibold">Endereço</label>
         <input
-          [ngModel]="editandoPessoa?.origem"
-          name="origem"
-          id="origem"
+          [ngModel]="editandoPessoa?.endereco"
+          name="endereco"
+          id="endereco"
           type="text"
-          placeholder="Origem..."
+          placeholder="Rua..."
           pInputText
         />
       </div>
-
+      <div class="flex flex-col space-y-2">
+        <label for="observacoes" class="font-semibold">Observações</label>
+        <textarea
+          rows="2"
+          placeholder="..."
+          class="w-full"
+          name="observacoes"
+          [ngModel]="editandoPessoa?.observacoes"
+          style="resize: none"
+          pTextarea
+        ></textarea>
+      </div>
       <div class="flex justify-end gap-2 pt-4">
         <p-button
           label="Cancelar"

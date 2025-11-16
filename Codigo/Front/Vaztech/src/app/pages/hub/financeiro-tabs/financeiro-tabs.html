@@ -216,6 +216,14 @@
             <div class="text-center py-4">
               <p class="text-3xl font-bold text-green-700">
                 {{ dadosVisaoGeral?.faturamento?.faturamentoTotalAnual | currency: 'BRL' }}
+                <br />
+                <span class="text-lg font-semibold text-center">
+                  Média mensal:
+                  {{
+                    (dadosVisaoGeral?.faturamento?.faturamentoTotalAnual ?? 0) / 12
+                      | currency: 'BRL'
+                  }}
+                </span>
               </p>
             </div>
           </p-card>
@@ -236,6 +244,11 @@
             <div class="text-center py-4">
               <p class="text-3xl font-bold text-red-700">
                 {{ dadosVisaoGeral?.custo?.custoTotalAnual | currency: 'BRL' }}
+                <br />
+                <span class="text-lg font-semibold text-center">
+                  Média mensal:
+                  {{ (dadosVisaoGeral?.custo?.custoTotalAnual ?? 0) / 12 | currency: 'BRL' }}
+                </span>
               </p>
             </div>
           </p-card>
@@ -257,11 +270,16 @@
               <p
                 class="text-3xl font-bold"
                 [ngClass]="{
-                  'text-blue-700': dadosVisaoGeral?.lucro?.lucroTotalAnual ?? 0 >= 0,
-                  'text-red-700': dadosVisaoGeral?.lucro?.lucroTotalAnual ?? 0 < 0,
+                  'text-blue-700': dadosVisaoGeral!.lucro!.lucroTotalAnual >= 0,
+                  'text-red-700': dadosVisaoGeral!.lucro!.lucroTotalAnual < 0,
                 }"
               >
                 {{ dadosVisaoGeral?.lucro?.lucroTotalAnual | currency: 'BRL' }}
+                <br />
+                <span class="text-lg font-semibold text-center">
+                  Média mensal:
+                  {{ (dadosVisaoGeral?.lucro?.lucroTotalAnual ?? 0) / 12 | currency: 'BRL' }}
+                </span>
               </p>
             </div>
           </p-card>

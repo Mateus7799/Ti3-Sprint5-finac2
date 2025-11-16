@@ -15,7 +15,7 @@ public record OperacaoResponseDTO (
         Integer tipo,
         String observacoes,
         LocalDateTime dataHoraTransacao,
-        String metodoPagamento
+        Integer formaPagamento
 ) {
     public OperacaoResponseDTO(Operacao operacao) {
         this(
@@ -27,7 +27,7 @@ public record OperacaoResponseDTO (
                 operacao.getTipo(),
                 operacao.getObservacoes(),
                 operacao.getDataHoraTransacao(),
-                operacao.getMetodoPagamento() != null ? operacao.getMetodoPagamento().getNome() : null
+                operacao.getMetodoPagamento() != null ? operacao.getMetodoPagamento().getId() : null
         );
     }
 }

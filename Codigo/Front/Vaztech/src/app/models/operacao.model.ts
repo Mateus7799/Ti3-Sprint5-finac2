@@ -10,7 +10,7 @@ export type Operacao = {
   tipo: 0 | 1 | 2;
   observacoes: string;
   dataHoraTransacao: Date;
-  formaPagmento: FormaPagamento[];
+  formaPagamento: number;
   troca?: {
     valorAbatido: number;
     produtoRecebido: ProdutoOperacao;

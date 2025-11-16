@@ -2,8 +2,8 @@ import { PessoaResponse } from './pessoa.model';
 import { Produto } from './produto.model';
 
 export enum TiposServico {
-  EXTERNO,
-  INTERNO,
+  EXTERNO = 1,
+  INTERNO = 2,
 }
 
 export type StatusServico = {
@@ -13,6 +13,7 @@ export type StatusServico = {
 
 export type Servico = {
   id: number;
+  formaPagamento: number;
   produto: Produto;
   tipo: TiposServico;
   valor: number;
@@ -20,7 +21,7 @@ export type Servico = {
   dataInicio: Date;
   dataFim: Date;
   observacoes: string;
-  status: StatusServico;
+  status: number;
 };
 
 export type PessoaServico = {
@@ -39,11 +40,17 @@ export type ProdutoServico = {
 export type AdicionarServicoDTO = {
   numeroSerieProduto: string | null;
   valor: number;
-  idPessoa: number;
+  idPessoa?: number;
   metodoPagamento: number;
   tipo: TiposServico;
   observacoes?: string;
   produto?: Produto;
+};
+
+export type EditarServicoDTO = {
+  valor?: number;
+  metodoPagamento?: number;
+  observacoes?: string;
 };
 
 export type ServicosReqDTO = {

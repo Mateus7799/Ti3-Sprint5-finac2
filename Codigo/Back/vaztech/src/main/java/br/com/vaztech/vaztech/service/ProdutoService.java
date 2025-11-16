@@ -24,6 +24,9 @@ public class ProdutoService {
     @Autowired
     StatusProdutoRepository statusProdutoRepository;
 
+    private static final Integer VENDA = 0;
+    private static final Integer COMPRA = 1;
+
     public List<ProdutoBuscarResponseDTO> buscarProdutos(String query) {
         return produtoRepository.findTop50ByAparelhoOrModeloOrNumeroSerieLike(query).stream().map(ProdutoBuscarResponseDTO::new).toList();
     }
@@ -61,10 +64,12 @@ public class ProdutoService {
             produto.setCor(dto.cor());
             produto.setObservacoes(dto.observacoes());
 
-            StatusProduto status = statusProdutoRepository.findById(dto.status())
-                    .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND, "Status não encontrado com ID: " + dto.status()));
+            if (dto.status() != null) {
+                StatusProduto status = statusProdutoRepository.findById(dto.status())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status não encontrado com ID: " + dto.status()));
 
-            produto.setStatus(status);
+                produto.setStatus(status);
+            }
 
             produtoRepository.save(produto);
 

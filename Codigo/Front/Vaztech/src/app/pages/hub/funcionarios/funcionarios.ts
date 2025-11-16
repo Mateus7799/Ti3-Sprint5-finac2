@@ -116,7 +116,7 @@ export class FuncionariosComponent {
         error: (err) => {
           console.error(err);
           this.toastService.add({
-            summary: 'Erro!',
+            summary: 'Erro ao alterar código de usuário!',
             detail: err.error.message,
             severity: 'error',
           });
@@ -145,7 +145,7 @@ export class FuncionariosComponent {
           error: (err) => {
             console.error(err);
             this.toastService.add({
-              summary: 'Erro!',
+              summary: 'Não foi possível cadastrar o funcionário',
               detail: err.error.message,
               severity: 'error',
             });
@@ -175,7 +175,7 @@ export class FuncionariosComponent {
       error: (err) => {
         console.error(err);
         this.toastService.add({
-          summary: 'Erro!',
+          summary: 'Não foi possível editar os dados do funcionário',
           detail: err.error.message,
           severity: 'error',
         });
@@ -191,14 +191,14 @@ export class FuncionariosComponent {
     this.funcionariosService.buscarFuncionarios().subscribe({
       next: (funcionarios: FuncionarioResponse[]) => {
         this.funcionarios = [...funcionarios].map((f) => {
-          f.dataNascimento = new Date(f.dataNascimento);
+          f.dataNascimento = new Date(f.dataNascimento + 'T00:00:00');
           return f;
         });
       },
       error: (err) => {
         console.error(err);
         this.toastService.add({
-          summary: 'Erro ao carregar!',
+          summary: 'Erro ao carregar os funcionários',
           detail: err.error.message,
           severity: 'error',
         });

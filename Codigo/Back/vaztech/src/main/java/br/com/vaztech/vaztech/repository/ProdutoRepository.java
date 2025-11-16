@@ -21,8 +21,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, String> {
     Page<Produto> buscarProdutosPaginados(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     @Query("SELECT p FROM Produto p " +
-           "WHERE LOWER(p.aparelho) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "WHERE p.status.id IN (1, 3) AND ( " +
+            "LOWER(p.aparelho) LIKE LOWER(CONCAT('%', :query, '%')) " +
            "OR LOWER(p.modelo) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "OR LOWER(p.numeroSerie) LIKE LOWER(CONCAT('%', :query, '%'))")
+           "OR LOWER(p.numeroSerie) LIKE LOWER(CONCAT('%', :query, '%'))" +
+            ")")
     List<Produto> findTop50ByAparelhoOrModeloOrNumeroSerieLike(@Param("query") String query);
 }

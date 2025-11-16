@@ -11,6 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 @Service
@@ -24,7 +28,7 @@ public class PessoaService {
     }
 
     public Page<PessoaResponseDTO> buscarPessoasPaginadas(String searchTerm, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.ASC, "nome");
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "id");
 
         if (searchTerm == null || searchTerm.isBlank()) {
             return pessoaRepository.findAll(pageRequest)
@@ -33,6 +37,45 @@ public class PessoaService {
 
         return pessoaRepository.buscarPessoasPaginadas(searchTerm.toLowerCase(), pageRequest)
                 .map(PessoaResponseDTO::new);
+    }
+
+    public List<PessoaAniversarioResponseDTO> buscarAniversariantesDaSemana() {
+
+        LocalDate hoje = LocalDate.now();
+
+        // Segunda-feira da semana atual
+        LocalDate start = hoje.with(DayOfWeek.MONDAY);
+
+        // Domingo da semana atual
+        LocalDate end = hoje.with(DayOfWeek.SUNDAY);
+
+        // Se o range cruzar dois meses (ex: final de janeiro → início de fevereiro)
+        if (start.getMonthValue() != end.getMonthValue()) {
+            List<PessoaAniversarioResponseDTO> lista = new java.util.ArrayList<>();
+
+            // Buscar no mês do início
+            lista.addAll(pessoaRepository.findAniversariantesNoMes(
+                    start.getDayOfMonth(),
+                    start.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth(),
+                    start.getMonthValue()
+            ));
+
+            // Buscar no mês do fim
+            lista.addAll(pessoaRepository.findAniversariantesNoMes(
+                    1,
+                    end.getDayOfMonth(),
+                    end.getMonthValue()
+            ));
+
+            return lista;
+        }
+
+        // Semana no mesmo mês
+        return pessoaRepository.findAniversariantesNoMes(
+                start.getDayOfMonth(),
+                end.getDayOfMonth(),
+                start.getMonthValue()
+        );
     }
 
     @Transactional

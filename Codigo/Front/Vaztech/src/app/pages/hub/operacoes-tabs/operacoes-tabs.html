@@ -8,13 +8,19 @@
           <input [(ngModel)]="searchText" type="text" placeholder="ID..." pInputText class="w-96" />
         </p-iconfield>
         <p-button
+          (click)="filterPopover.toggle($event)"
+          [outlined]="true"
+          severity="secondary"
+          icon="pi pi-filter"
+        ></p-button>
+        <p-button
           [outlined]="true"
           [rounded]="true"
           severity="primary"
           label="Pesquisar"
           (click)="onPesquisar()"
         ></p-button>
-        @if (searchText.length > 0) {
+        @if (haParametrosDeBusca) {
           <p-button
             [outlined]="true"
             [rounded]="true"
@@ -125,7 +131,7 @@
             } @else {
               <p-card
                 [header]="
-                  searchText.length <= 0
+                  !haParametrosDeBusca
                     ? 'Não há operações cadastradas!'
                     : 'Não foram encontradas operações de compra'
                 "
@@ -133,7 +139,7 @@
               >
                 <p class="m-0">
                   {{
-                    searchText.length <= 0
+                    !haParametrosDeBusca
                       ? 'Comece a adicionar operações de compra no sistema para vê-las aqui!'
                       : 'Modifique seus parâmetros de busca e tente novamente!'
                   }}
@@ -222,7 +228,7 @@
             } @else {
               <p-card
                 [header]="
-                  searchText.length <= 0
+                  !haParametrosDeBusca
                     ? 'Não há operações cadastradas!'
                     : 'Não foram encontradas operações de venda'
                 "
@@ -230,7 +236,7 @@
               >
                 <p class="m-0">
                   {{
-                    searchText.length <= 0
+                    !haParametrosDeBusca
                       ? 'Comece a adicionar operações de venda no sistema para vê-las aqui!'
                       : 'Modifique seus parâmetros de busca e tente novamente!'
                   }}
@@ -296,4 +302,25 @@
       </button>
     </form>
   </p-dialog>
+  <p-popover #filterPopover>
+    <div class="w-48 p-2 gap-2 flex flex-col">
+      <h1 class="font-semibold">Configure quais valores quer ver!</h1>
+      <p-inputnumber
+        [(ngModel)]="minimoValorFiltro"
+        placeholder="Valor mínimo..."
+        inputStyleClass="w-36"
+        mode="currency"
+        currency="BRL"
+        [showClear]="true"
+      />
+      <p-inputnumber
+        [(ngModel)]="maximoValorFiltro"
+        placeholder="Valor máximo..."
+        [showClear]="true"
+        inputStyleClass="w-36"
+        mode="currency"
+        currency="BRL"
+      />
+    </div>
+  </p-popover>
 </main>

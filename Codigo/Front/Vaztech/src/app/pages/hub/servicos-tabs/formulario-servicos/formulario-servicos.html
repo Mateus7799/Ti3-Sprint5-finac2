@@ -43,6 +43,7 @@
           required
           [options]="opcoesTipoServico"
           optionLabel="label"
+          [disabled]="!!servicoEdicao"
           optionValue="value"
           name="tipo"
           [showClear]="true"
@@ -51,26 +52,38 @@
         ></p-select>
         <label for="tipo">Tipo de Serviço</label>
       </p-iftalabel>
+      @if (servicoEdicao?.dataInicio) {
+        <!-- Data de Inicio -->
+        <p-iftalabel>
+          <p-datepicker
+            placeholder="Data de Início"
+            name="dataInicio"
+            [ngModel]="servicoEdicao?.dataInicio"
+            class="w-44"
+            disabled
+            [showIcon]="true"
+            appendTo="body"
+          ></p-datepicker>
+          <label for="dataInicio">Data de Início</label>
+        </p-iftalabel>
+      }
+      @if (servicoEdicao?.dataFim) {
+        <!-- Data de Inicio -->
+        <p-iftalabel>
+          <p-datepicker
+            placeholder="Data de Finalização"
+            name="dataFim"
+            [ngModel]="servicoEdicao?.dataFim"
+            class="w-44"
+            disabled
+            [showIcon]="true"
+            appendTo="body"
+          ></p-datepicker>
+          <label for="dataFim">Data de Finalização</label>
+        </p-iftalabel>
+      }
     </div>
     <div class="flex gap-4 py-2">
-      <!-- Pessoa -->
-      <p-iftalabel>
-        <p-autocomplete
-          [ngModel]="servicoEdicao?.pessoa"
-          [disabled]="!!servicoEdicao"
-          [delay]="500"
-          name="pessoa"
-          optionLabel="nome"
-          [suggestions]="pessoasDisponiveis"
-          [forceSelection]="true"
-          (completeMethod)="queryPessoas($event)"
-          inputStyleClass="w-56"
-          required
-          inputId="pessoa"
-          placeholder="Digite para procurar..."
-        ></p-autocomplete>
-        <label for="pessoa">Pessoa relacionada</label>
-      </p-iftalabel>
       <!-- Produto -->
       <p-iftalabel>
         <p-autocomplete
@@ -90,6 +103,26 @@
         ></p-autocomplete>
         <label for="produto">Produto</label>
       </p-iftalabel>
+      @if (tipoServicoSelecionado !== tiposServicoEnum.INTERNO) {
+        <!-- Pessoa -->
+        <p-iftalabel>
+          <p-autocomplete
+            [ngModel]="servicoEdicao?.pessoa"
+            [disabled]="!!servicoEdicao"
+            [delay]="500"
+            name="pessoa"
+            optionLabel="nome"
+            [suggestions]="pessoasDisponiveis"
+            [forceSelection]="true"
+            (completeMethod)="queryPessoas($event)"
+            inputStyleClass="w-64"
+            required
+            inputId="pessoa"
+            placeholder="Digite para procurar..."
+          ></p-autocomplete>
+          <label for="pessoa">Pessoa relacionada</label>
+        </p-iftalabel>
+      }
     </div>
     <div class="flex gap-4 py-2">
       <!-- Observacoes -->
@@ -134,7 +167,7 @@
             placeholder="..."
             type="text"
             pInputText
-            [(ngModel)]="produtoInput.value"
+            ngModel
             name="numeroSerieProduto"
             required
             class="w-72"

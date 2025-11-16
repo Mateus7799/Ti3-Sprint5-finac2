@@ -15,6 +15,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import {
   AdicionarServicoDTO,
+  EditarServicoDTO,
   PessoaServico,
   ProdutoServico,
   Servico,
@@ -28,6 +29,7 @@ import { UtilsService } from '../../../../services/utils.service';
 import { Produto } from '../../../../models/produto.model';
 import { ServicosService } from '../../../../services/servicos.service';
 import { MessageService } from 'primeng/api';
+import { DatePickerModule } from 'primeng/datepicker';
 
 type TipoServicoOpcao = {
   label: string;
@@ -38,6 +40,7 @@ type TipoServicoOpcao = {
   selector: 'app-formulario-servicos',
   imports: [
     FormsModule,
+    DatePickerModule,
     ButtonModule,
     InputIconModule,
     InputTextModule,
@@ -62,6 +65,8 @@ export class FormularioServicos implements OnInit {
   servicoService = inject(ServicosService);
   utilsService = inject(UtilsService);
 
+  tiposServicoEnum = TiposServico;
+
   @Input() servicoEdicao!: Servico;
   @Output() fecharAba = new EventEmitter();
 
@@ -79,13 +84,16 @@ export class FormularioServicos implements OnInit {
 
   cadastrarNovoProduto: boolean = false;
   formasPagamento: FormaPagamento[] = [];
-  formaPagamentoSelecionada: FormaPagamento | undefined;
+  formaPagamentoSelecionada: number | undefined;
 
   pessoasDisponiveis: PessoaServico[] = [];
   produtosDisponiveis: ProdutoServico[] = [];
 
   ngOnInit(): void {
     this.buscarFormasPagamento();
+    if (this.servicoEdicao) {
+      this.tipoServicoSelecionado = this.servicoEdicao.tipo;
+    }
   }
 
   enviarFormulario(form: NgForm) {
@@ -94,17 +102,20 @@ export class FormularioServicos implements OnInit {
       this.adicionarServico(form);
       return;
     }
+    this.editarServico(form);
   }
 
   adicionarServico(form: NgForm) {
     let dto: AdicionarServicoDTO = {
       metodoPagamento: form.value.formaPagamento,
       valor: form.value.valor,
-      idPessoa: form.value.pessoa.id,
       numeroSerieProduto: this.cadastrarNovoProduto ? null : form.value.produto.numeroSerie,
       observacoes: form.value.observacoes,
       tipo: form.value.tipo,
     };
+    if (this.tipoServicoSelecionado === TiposServico.EXTERNO) {
+      dto = { ...dto, idPessoa: form.value.pessoa.id };
+    }
     if (this.cadastrarNovoProduto) {
       const novoProduto: Produto = {
         numeroSerie: form.value.numeroSerieProduto,
@@ -123,7 +134,7 @@ export class FormularioServicos implements OnInit {
       next: () => {
         toastObj = {
           severity: 'success',
-          summary: 'Operação registrada!',
+          summary: 'Serviço registrado!',
           detail: `O serviço foi registrado com sucesso.`,
         };
         this.fecharAba.emit({ reload: true, toast: toastObj });
@@ -136,7 +147,33 @@ export class FormularioServicos implements OnInit {
           summary: 'Ocorreu um erro',
           detail: err.error.message,
         });
+      },
+    });
+  }
+
+  editarServico(form: NgForm) {
+    const dto: EditarServicoDTO = {
+      valor: form.value.valor,
+      metodoPagamento: form.value.formaPagamento,
+      observacoes: form.value.observacoes,
+    };
+    this.servicoService.editarServico(dto, this.servicoEdicao.id).subscribe({
+      next: () => {
+        const toastObj = {
+          severity: 'success',
+          summary: 'Serviço editado!',
+          detail: `As alterações foram salvas com sucesso.`,
+        };
+        this.fecharAba.emit({ reload: true, toast: toastObj });
         form.resetForm();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.toastService.add({
+          severity: 'error',
+          summary: 'Ocorreu um erro',
+          detail: err.error.message,
+        });
       },
     });
   }
@@ -161,6 +198,9 @@ export class FormularioServicos implements OnInit {
     this.utilsService.buscarFormasPagamento().subscribe({
       next: (fp: FormaPagamento[]) => {
         this.formasPagamento = [...fp];
+        if (!this.formaPagamentoSelecionada && this.servicoEdicao) {
+          this.formaPagamentoSelecionada = this.servicoEdicao.formaPagamento;
+        }
       },
       error: (err) => {
         console.error(err);

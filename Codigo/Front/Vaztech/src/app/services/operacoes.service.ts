@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import {
@@ -23,11 +23,14 @@ export class OperacoesService {
     tipo: 'compras' | 'vendas',
     pagina: number = 0,
     size: number = 4,
-    id: string = '',
+    searchText: string = '',
+    valorMinimo?: number,
+    valorMaximo?: number,
   ): Observable<OperacoesReq> {
     const t = tipo === 'vendas' ? 0 : 1;
+    const queryRangeString = `${!!valorMinimo ? '&min=' + valorMinimo : ''}${!!valorMaximo ? '&max=' + valorMaximo : ''}`;
     return this.http.get<OperacoesReq>(
-      `${environment.apiURL}/${this.apiRoute}?tipo=${t}&page=${pagina}&size=${size}&id=${!!id ? Number.parseInt(id) : ''}`,
+      `${environment.apiURL}/${this.apiRoute}?tipo=${t}&page=${pagina}&size=${size}${queryRangeString}&searchTerm=${searchText}`,
     );
   }
 

@@ -35,7 +35,7 @@
               </p-iconfield>
               <p-button
                 [outlined]="true"
-                severity="secondary"
+                severity="primary"
                 [rounded]="true"
                 label="Pesquisar"
                 (click)="carregarProdutos(paginaAtual)"
@@ -91,7 +91,7 @@
                 <td>{{ item.numeroSerie }}</td>
                 <td>{{ item.aparelho }}</td>
                 <td>{{ item.modelo }}</td>
-                <td>{{ item.status.nome }}</td>
+                <td>{{ getNomeStatus(item.status) }}</td>
                 <td class="flex justify-center items-center">
                   <p-button icon="pi pi-pen-to-square" (click)="onEditarProduto(item)"></p-button>
                 </td>
@@ -99,12 +99,20 @@
             </ng-template>
           </p-table>
         } @else {
-          <p-card header="Não há produtos no inventário!">
-            <p class="m-0">
-              Começe a adicionar itens no inventário e/ou realizar operações que adicionem produtos
-              no inventário para vê-los aqui!
-            </p>
-          </p-card>
+          @if (searchText.length <= 0) {
+            <p-card header="Não há produtos no inventário!">
+              <p class="m-0">
+                Começe a adicionar itens no inventário e/ou realizar operações que adicionem
+                produtos no inventário para vê-los aqui!
+              </p>
+            </p-card>
+          } @else {
+            <p-card header="Não foram encontrados produtos!">
+              <p class="m-0">
+                Ajuste seus parâmetros de busca e tente buscar os produtos novamente!
+              </p>
+            </p-card>
+          }
         }
       </p-tabpanel>
       <p-tabpanel [value]="1">

@@ -26,12 +26,18 @@ import { AvatarModule } from 'primeng/avatar';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { DatePickerModule } from 'primeng/datepicker';
 import { CpfCnpjMaskPipe } from '../../../pipes/cpf-cnpj-mask.pipe';
+import { TelefonePipe } from '../../../pipes/telefone.pipe';
+import { PopoverModule } from 'primeng/popover';
+import { CpfCnpjValidator } from '../../../validators/cpfCnpj.validator';
 
 @Component({
   selector: 'app-pessoas-tabs',
   standalone: true,
   imports: [
     CommonModule,
+    TelefonePipe,
+    PopoverModule,
+    CpfCnpjValidator,
     CardModule,
     ButtonModule,
     FormsModule,
@@ -84,7 +90,7 @@ export class PessoasTabsComponent {
     this.pessoaService.buscarPessoas(this.paginaAtual, this.itensPorPagina).subscribe({
       next: (pessoas: PessoasReqDTO) => {
         this.pessoas = [...pessoas.content].map((p) => {
-          if (p.dataNascimento) {
+          if (!!p.dataNascimento) {
             p.dataNascimento = new Date((p.dataNascimento as unknown as string) + 'T00:00:00');
           }
           return p;
@@ -109,7 +115,9 @@ export class PessoasTabsComponent {
       .subscribe({
         next: (pessoas: PessoasReqDTO) => {
           this.pessoas = [...pessoas.content].map((p) => {
-            p.dataNascimento = new Date((p.dataNascimento as unknown as string) + 'T00:00:00');
+            if (!!p.dataNascimento) {
+              p.dataNascimento = new Date((p.dataNascimento as unknown as string) + 'T00:00:00');
+            }
             return p;
           });
           console.log(pessoas);
@@ -161,7 +169,10 @@ export class PessoasTabsComponent {
         nome: form.value.nome,
         cpfCnpj: cpfCnpjLimpo,
         dataNascimento: form.value.dataNascimento || null,
-        origem: null,
+        contato: form.value.contato,
+        endereco: form.value.endereco,
+        observacoes: form.value.observacoes,
+        origem: form.value.origem,
       };
 
       this.pessoaService.cadastrarPessoa(novaPessoa).subscribe({
@@ -190,6 +201,9 @@ export class PessoasTabsComponent {
         cpfCnpj: cpfCnpjLimpo,
         dataNascimento: form.value.dataNascimento || null,
         origem: null,
+        contato: form.value.contato,
+        endereco: form.value.endereco,
+        observacoes: form.value.observacoes,
       };
 
       this.pessoaService.editarPessoa(pessoaAtualizada).subscribe({

@@ -9,7 +9,7 @@ public record ProdutoResponseDTO(
         String modelo,
         String cor,
         String observacoes,
-        String status
+        Integer status
 ) {
     public ProdutoResponseDTO(Produto produto) {
         this(
@@ -19,7 +19,7 @@ public record ProdutoResponseDTO(
                 produto.getModelo(),
                 produto.getCor(),
                 produto.getObservacoes(),
-                produto.getStatus() != null ? produto.getStatus().getNome() : null
+                produto.getStatus() != null ? produto.getStatus().getId() : null
         );
     }
 }

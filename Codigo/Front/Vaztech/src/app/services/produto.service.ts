@@ -33,6 +33,6 @@ export class ProdutoService {
   }
 
   editarProduto(produto: Produto) {
-    return this.http.put(`${environment.apiURL}/${this.apiRoute}/${produto.numeroSerie}`, produto);
+    return this.http.put(`${environment.apiURL}/${this.apiRoute}/${produto.id}`, produto);
   }
 }

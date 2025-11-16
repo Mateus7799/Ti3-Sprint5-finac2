@@ -2,6 +2,7 @@ package br.com.vaztech.vaztech.service;
 
 import br.com.vaztech.vaztech.dto.*;
 import br.com.vaztech.vaztech.repository.OperacaoRepository;
+import br.com.vaztech.vaztech.repository.ServicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -20,16 +21,27 @@ public class FinanceiroService {
     @Autowired
     private OperacaoRepository operacaoRepository;
 
+    @Autowired
+    private ServicoRepository servicoRepository;
+
     private static final Integer TIPO_VENDA = 0;
     private static final Integer TIPO_COMPRA = 1;
     private static final Locale LOCALE_BRASIL = new Locale("pt", "BR");
+
+    private static final Integer SERVICO_EXTERNO = 1;
+    private static final Integer SERVICO_INTERNO = 2;
+
 
     public FinanceiroFaturamentoResponseDTO getFaturamentoMensal(
             Integer anoAtual, Integer mesAtual,
             Integer anoComparacao, Integer mesComparacao) {
 
-        BigDecimal faturamentoAtual = operacaoRepository.sumValorByTipoAndAnoAndMes(
+        BigDecimal faturamentoOperacoes = operacaoRepository.sumValorByTipoAndAnoAndMes(
                 TIPO_VENDA, anoAtual, mesAtual);
+        BigDecimal faturamentoServicos = servicoRepository.sumValorByTipoAndAnoAndMes(
+                SERVICO_EXTERNO, anoAtual, mesAtual);
+        BigDecimal faturamentoAtual = faturamentoOperacoes.add(faturamentoServicos);
+
         String anoMesAtualStr = String.format("%d-%02d", anoAtual, mesAtual);
 
         BigDecimal faturamentoComparacao = null;
@@ -37,8 +49,12 @@ public class FinanceiroService {
         BigDecimal margem = null;
 
         if (anoComparacao != null && mesComparacao != null) {
-            faturamentoComparacao = operacaoRepository.sumValorByTipoAndAnoAndMes(
+            BigDecimal faturamentoOpComp = operacaoRepository.sumValorByTipoAndAnoAndMes(
                     TIPO_VENDA, anoComparacao, mesComparacao);
+            BigDecimal faturamentoServComp = servicoRepository.sumValorByTipoAndAnoAndMes(
+                    SERVICO_EXTERNO, anoComparacao, mesComparacao);
+            faturamentoComparacao = faturamentoOpComp.add(faturamentoServComp);
+
             anoMesComparacaoStr = String.format("%d-%02d", anoComparacao, mesComparacao);
 
             margem = calcularMargem(faturamentoAtual, faturamentoComparacao);
@@ -55,11 +71,22 @@ public class FinanceiroService {
 
     public FinanceiroFaturamentoAnualResponseDTO getFaturamentoAnual(Integer ano) {
 
-        List<FaturamentoPorMesDTO> faturamentoAgrupado =
+        List<FaturamentoPorMesDTO> faturamentoOperacoes =
                 operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_VENDA, ano);
 
-        Map<Integer, BigDecimal> mapaFaturamento = faturamentoAgrupado.stream()
+        Map<Integer, BigDecimal> mapaFaturamento = faturamentoOperacoes.stream()
                 .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FaturamentoPorMesDTO> faturamentoServicos =
+                servicoRepository.findValorByAnoGroupByMes(SERVICO_EXTERNO, ano);
+
+        faturamentoServicos.forEach(servicoMes -> {
+            mapaFaturamento.merge(
+                    servicoMes.getMes(),
+                    servicoMes.getTotal(),
+                    BigDecimal::add
+            );
+        });
 
         List<FinanceiroFaturamentoAnualResponseDTO.FaturamentoMensalDetalhe> detalhamentoMensal =
                 new ArrayList<>();
@@ -91,11 +118,15 @@ public class FinanceiroService {
             Integer anoAtual, Integer mesAtual,
             Integer anoComparacao, Integer mesComparacao) {
 
-        // Cálculo do Lucro Atual
-        BigDecimal faturamentoAtual = operacaoRepository.sumValorByTipoAndAnoAndMes(
-                TIPO_VENDA, anoAtual, mesAtual);
-        BigDecimal custoAtual = operacaoRepository.sumValorByTipoAndAnoAndMes(
-                TIPO_COMPRA, anoAtual, mesAtual);
+
+        BigDecimal faturamentoOperacoes = operacaoRepository.sumValorByTipoAndAnoAndMes(TIPO_VENDA, anoAtual, mesAtual);
+        BigDecimal faturamentoServicos = servicoRepository.sumValorByTipoAndAnoAndMes(SERVICO_EXTERNO, anoAtual, mesAtual);
+        BigDecimal faturamentoAtual = faturamentoOperacoes.add(faturamentoServicos);
+
+        BigDecimal custoOperacoes = operacaoRepository.sumValorByTipoAndAnoAndMes(TIPO_COMPRA, anoAtual, mesAtual);
+        BigDecimal custoServicos = servicoRepository.sumValorByTipoAndAnoAndMes(SERVICO_INTERNO, anoAtual, mesAtual);
+        BigDecimal custoAtual = custoOperacoes.add(custoServicos);
+
         BigDecimal lucroAtual = faturamentoAtual.subtract(custoAtual);
         String anoMesAtualStr = String.format("%d-%02d", anoAtual, mesAtual);
 
@@ -103,12 +134,16 @@ public class FinanceiroService {
         String anoMesComparacaoStr = null;
         BigDecimal margem = null;
 
-        // Cálculo da Comparação
         if (anoComparacao != null && mesComparacao != null) {
-            BigDecimal faturamentoComparacao = operacaoRepository.sumValorByTipoAndAnoAndMes(
-                    TIPO_VENDA, anoComparacao, mesComparacao);
-            BigDecimal custoComparacao = operacaoRepository.sumValorByTipoAndAnoAndMes(
-                    TIPO_COMPRA, anoComparacao, mesComparacao);
+
+            BigDecimal faturamentoOpComp = operacaoRepository.sumValorByTipoAndAnoAndMes(TIPO_VENDA, anoComparacao, mesComparacao);
+            BigDecimal faturamentoServComp = servicoRepository.sumValorByTipoAndAnoAndMes(SERVICO_EXTERNO, anoComparacao, mesComparacao);
+            BigDecimal faturamentoComparacao = faturamentoOpComp.add(faturamentoServComp);
+
+            BigDecimal custoOpComp = operacaoRepository.sumValorByTipoAndAnoAndMes(TIPO_COMPRA, anoComparacao, mesComparacao);
+            BigDecimal custoServComp = servicoRepository.sumValorByTipoAndAnoAndMes(SERVICO_INTERNO, anoComparacao, mesComparacao);
+            BigDecimal custoComparacao = custoOpComp.add(custoServComp);
+
             lucroComparacao = faturamentoComparacao.subtract(custoComparacao);
             anoMesComparacaoStr = String.format("%d-%02d", anoComparacao, mesComparacao);
 
@@ -128,8 +163,12 @@ public class FinanceiroService {
             Integer anoAtual, Integer mesAtual,
             Integer anoComparacao, Integer mesComparacao) {
 
-        BigDecimal custoAtual = operacaoRepository.sumValorByTipoAndAnoAndMes(
+        BigDecimal custoOperacoes = operacaoRepository.sumValorByTipoAndAnoAndMes(
                 TIPO_COMPRA, anoAtual, mesAtual);
+        BigDecimal custoServicos = servicoRepository.sumValorByTipoAndAnoAndMes(
+                SERVICO_INTERNO, anoAtual, mesAtual);
+        BigDecimal custoAtual = custoOperacoes.add(custoServicos);
+
         String anoMesAtualStr = String.format("%d-%02d", anoAtual, mesAtual);
 
         BigDecimal custoComparacao = null;
@@ -137,8 +176,12 @@ public class FinanceiroService {
         BigDecimal margem = null;
 
         if (anoComparacao != null && mesComparacao != null) {
-            custoComparacao = operacaoRepository.sumValorByTipoAndAnoAndMes(
+            BigDecimal custoOpComp = operacaoRepository.sumValorByTipoAndAnoAndMes(
                     TIPO_COMPRA, anoComparacao, mesComparacao);
+            BigDecimal custoServComp = servicoRepository.sumValorByTipoAndAnoAndMes(
+                    SERVICO_INTERNO, anoComparacao, mesComparacao);
+            custoComparacao = custoOpComp.add(custoServComp);
+
             anoMesComparacaoStr = String.format("%d-%02d", anoComparacao, mesComparacao);
 
             margem = calcularMargem(custoAtual, custoComparacao);
@@ -155,11 +198,22 @@ public class FinanceiroService {
 
     public FinanceiroCustoAnualResponseDTO getCustoAnual(Integer ano) {
 
-        List<FaturamentoPorMesDTO> custoAgrupado =
+        List<FaturamentoPorMesDTO> custoOperacoes =
                 operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_COMPRA, ano);
 
-        Map<Integer, BigDecimal> mapaCusto = custoAgrupado.stream()
+        Map<Integer, BigDecimal> mapaCusto = custoOperacoes.stream()
                 .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FaturamentoPorMesDTO> custoServicos =
+                servicoRepository.findValorByAnoGroupByMes(SERVICO_INTERNO, ano);
+
+        custoServicos.forEach(servicoMes -> {
+            mapaCusto.merge(
+                    servicoMes.getMes(),
+                    servicoMes.getTotal(),
+                    BigDecimal::add
+            );
+        });
 
         List<FinanceiroCustoAnualResponseDTO.CustoMensalDetalhe> detalhamentoMensal =
                 new ArrayList<>();
@@ -189,15 +243,29 @@ public class FinanceiroService {
 
     public FinanceiroLucroAnualResponseDTO getLucroAnual(Integer ano) {
 
-        List<FaturamentoPorMesDTO> faturamentoAgrupado =
+        List<FaturamentoPorMesDTO> faturamentoOperacoes =
                 operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_VENDA, ano);
-        Map<Integer, BigDecimal> mapaFaturamento = faturamentoAgrupado.stream()
+        Map<Integer, BigDecimal> mapaFaturamento = faturamentoOperacoes.stream()
                 .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
 
-        List<FaturamentoPorMesDTO> custoAgrupado =
+        List<FaturamentoPorMesDTO> faturamentoServicos =
+                servicoRepository.findValorByAnoGroupByMes(SERVICO_EXTERNO, ano);
+
+        faturamentoServicos.forEach(servicoMes -> {
+            mapaFaturamento.merge(servicoMes.getMes(), servicoMes.getTotal(), BigDecimal::add);
+        });
+
+        List<FaturamentoPorMesDTO> custoOperacoes =
                 operacaoRepository.findFaturamentoByAnoGroupByMes(TIPO_COMPRA, ano);
-        Map<Integer, BigDecimal> mapaCusto = custoAgrupado.stream()
+        Map<Integer, BigDecimal> mapaCusto = custoOperacoes.stream()
                 .collect(Collectors.toMap(FaturamentoPorMesDTO::getMes, FaturamentoPorMesDTO::getTotal));
+
+        List<FaturamentoPorMesDTO> custoServicos =
+                servicoRepository.findValorByAnoGroupByMes(SERVICO_INTERNO, ano);
+
+        custoServicos.forEach(servicoMes -> {
+            mapaCusto.merge(servicoMes.getMes(), servicoMes.getTotal(), BigDecimal::add);
+        });
 
         List<FinanceiroLucroAnualResponseDTO.LucroMensalDetalhe> detalhamentoMensal =
                 new ArrayList<>();
@@ -229,15 +297,12 @@ public class FinanceiroService {
 
     private BigDecimal calcularMargem(BigDecimal atual, BigDecimal comparacao) {
         if (comparacao == null || comparacao.compareTo(BigDecimal.ZERO) == 0) {
-            // Se comparacao é zero e atual é positivo, o crescimento é "infinito" (representado como 100%)
             if (atual.compareTo(BigDecimal.ZERO) > 0) {
                 return new BigDecimal("100.00");
             }
-            // Se ambos são zero, não houve mudança.
             return BigDecimal.ZERO;
         }
 
-        // ((atual - comparacao) / comparacao) * 100
         BigDecimal diferenca = atual.subtract(comparacao);
 
         return diferenca.divide(comparacao, 4, RoundingMode.HALF_UP)
