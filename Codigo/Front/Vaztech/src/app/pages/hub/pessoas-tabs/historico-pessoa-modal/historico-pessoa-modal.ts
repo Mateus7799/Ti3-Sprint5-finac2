@@ -77,7 +77,7 @@ export class HistoricoPessoaModal implements OnChanges {
   }
 
   get operacoes(): HistoricoPessoaItem[] {
-    return this.historico.filter((item) => !item.dataFim || item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
+    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
   }
 
   get servicos(): HistoricoPessoaItem[] {

@@ -77,7 +77,7 @@ export class HistoricoProdutoModal implements OnChanges {
   }
 
   get operacoes(): HistoricoProdutoItem[] {
-    return this.historico.filter((item) => !item.dataFim || item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
+    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
   }
 
   get servicos(): HistoricoProdutoItem[] {
