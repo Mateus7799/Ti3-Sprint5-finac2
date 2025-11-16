@@ -1,0 +1,265 @@
+<p-dialog
+  [header]="'Histórico de ' + (pessoa?.nome || '')"
+  [modal]="true"
+  [(visible)]="visible"
+  [draggable]="false"
+  [style]="{ width: '70rem', maxHeight: '80vh' }"
+>
+  @if (carregando) {
+    <div class="flex justify-center items-center py-8">
+      <p-message severity="info" size="small">Carregando histórico...</p-message>
+    </div>
+  } @else {
+    <p-tabs [(value)]="abaAtual">
+      <p-tablist>
+        <p-tab [value]="0">Todas ({{ historico.length }})</p-tab>
+        <p-tab [value]="1">Operações ({{ operacoes.length }})</p-tab>
+        <p-tab [value]="2">Serviços ({{ servicos.length }})</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel [value]="0">
+          @if (historico.length > 0) {
+            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+              @for (item of historico; track item.data) {
+                @if (item.tipo === 'operacao') {
+                  <p-card>
+                    <ng-template #title>
+                      <section class="flex justify-between items-center">
+                        <div class="flex items-center">
+                          <p-avatar
+                            icon="pi pi-dollar"
+                            class="mr-2"
+                            size="large"
+                            shape="circle"
+                          />
+                          <div class="flex flex-col">
+                            <span class="font-bold text-primary"
+                              >Operação #{{ getOperacao(item).id }}</span
+                            >
+                            <span class="text-sm text-neutral-500"
+                              >{{ getOperacao(item).produto.numeroSerie }}</span
+                            >
+                          </div>
+                        </div>
+                        <p-message
+                          [severity]="getSeveridadeOperacao(getOperacao(item).tipo)"
+                          size="small"
+                          >{{ getTipoOperacao(getOperacao(item).tipo) }}</p-message
+                        >
+                      </section>
+                    </ng-template>
+                    <div class="flex justify-between text-sm">
+                      <div>
+                        <p>
+                          <strong>Produto:</strong> {{ getOperacao(item).produto.aparelho }}
+                          {{ getOperacao(item).produto.modelo }}
+                        </p>
+                        <p><strong>Funcionário:</strong> {{ getOperacao(item).funcionario.nome }}</p>
+                      </div>
+                      <div class="text-end">
+                        <p><strong>Data:</strong> {{ getOperacao(item).dataHoraTransacao | date }}</p>
+                        <p
+                          [ngClass]="
+                            getOperacao(item).tipo === 0 ? 'text-green-600' : 'text-red-600'
+                          "
+                        >
+                          <strong>Valor:</strong> {{ getOperacao(item).valor | currency: 'BRL' }}
+                        </p>
+                      </div>
+                    </div>
+                    @if (getOperacao(item).observacoes) {
+                      <div class="mt-2 pt-2 border-t border-neutral-200">
+                        <p class="text-sm text-gray-600">
+                          <strong>Obs:</strong> {{ getOperacao(item).observacoes }}
+                        </p>
+                      </div>
+                    }
+                  </p-card>
+                } @else {
+                  <p-card>
+                    <ng-template #title>
+                      <section class="flex justify-between items-center">
+                        <div class="flex items-center">
+                          <p-avatar
+                            icon="pi pi-wrench"
+                            class="mr-2"
+                            size="large"
+                            shape="circle"
+                          />
+                          <div class="flex flex-col">
+                            <span class="font-bold text-primary"
+                              >Serviço #{{ getServico(item).id }}</span
+                            >
+                            <span class="text-sm text-neutral-500"
+                              >{{ getServico(item).produto.numeroSerie }}</span
+                            >
+                          </div>
+                        </div>
+                        <p-message
+                          [severity]="getServico(item).tipo === 1 ? 'info' : 'warn'"
+                          size="small"
+                          >{{ getServico(item).tipo === 1 ? 'Externo' : 'Interno' }}</p-message
+                        >
+                      </section>
+                    </ng-template>
+                    <div class="flex justify-between text-sm">
+                      <div>
+                        <p>
+                          <strong>Produto:</strong> {{ getServico(item).produto.aparelho }}
+                          {{ getServico(item).produto.modelo }}
+                        </p>
+                        <p><strong>Data Início:</strong> {{ getServico(item).dataInicio | date }}</p>
+                      </div>
+                      <div class="text-end">
+                        <p>
+                          <strong>Data Fim:</strong>
+                          {{ getServico(item).dataFim ? (getServico(item).dataFim | date) : 'Em andamento' }}
+                        </p>
+                        <p class="text-blue-600">
+                          <strong>Valor:</strong> {{ getServico(item).valor | currency: 'BRL' }}
+                        </p>
+                      </div>
+                    </div>
+                    @if (getServico(item).observacoes) {
+                      <div class="mt-2 pt-2 border-t border-neutral-200">
+                        <p class="text-sm text-gray-600">
+                          <strong>Obs:</strong> {{ getServico(item).observacoes }}
+                        </p>
+                      </div>
+                    }
+                  </p-card>
+                }
+              }
+            </div>
+          } @else {
+            <p-card header="Nenhum histórico encontrado">
+              <p class="m-0">Esta pessoa ainda não possui operações ou serviços registrados.</p>
+            </p-card>
+          }
+        </p-tabpanel>
+        <p-tabpanel [value]="1">
+          @if (operacoes.length > 0) {
+            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+              @for (item of operacoes; track item.data) {
+                <p-card>
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex items-center">
+                        <p-avatar icon="pi pi-dollar" class="mr-2" size="large" shape="circle" />
+                        <div class="flex flex-col">
+                          <span class="font-bold text-primary"
+                            >Operação #{{ getOperacao(item).id }}</span
+                          >
+                          <span class="text-sm text-neutral-500"
+                            >{{ getOperacao(item).produto.numeroSerie }}</span
+                          >
+                        </div>
+                      </div>
+                      <p-message
+                        [severity]="getSeveridadeOperacao(getOperacao(item).tipo)"
+                        size="small"
+                        >{{ getTipoOperacao(getOperacao(item).tipo) }}</p-message
+                      >
+                    </section>
+                  </ng-template>
+                  <div class="flex justify-between text-sm">
+                    <div>
+                      <p>
+                        <strong>Produto:</strong> {{ getOperacao(item).produto.aparelho }}
+                        {{ getOperacao(item).produto.modelo }}
+                      </p>
+                      <p><strong>Funcionário:</strong> {{ getOperacao(item).funcionario.nome }}</p>
+                    </div>
+                    <div class="text-end">
+                      <p><strong>Data:</strong> {{ getOperacao(item).dataHoraTransacao | date }}</p>
+                      <p
+                        [ngClass]="
+                          getOperacao(item).tipo === 0 ? 'text-green-600' : 'text-red-600'
+                        "
+                      >
+                        <strong>Valor:</strong> {{ getOperacao(item).valor | currency: 'BRL' }}
+                      </p>
+                    </div>
+                  </div>
+                  @if (getOperacao(item).observacoes) {
+                    <div class="mt-2 pt-2 border-t border-neutral-200">
+                      <p class="text-sm text-gray-600">
+                        <strong>Obs:</strong> {{ getOperacao(item).observacoes }}
+                      </p>
+                    </div>
+                  }
+                </p-card>
+              }
+            </div>
+          } @else {
+            <p-card header="Nenhuma operação encontrada">
+              <p class="m-0">Esta pessoa ainda não possui operações registradas.</p>
+            </p-card>
+          }
+        </p-tabpanel>
+        <p-tabpanel [value]="2">
+          @if (servicos.length > 0) {
+            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+              @for (item of servicos; track item.data) {
+                <p-card>
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex items-center">
+                        <p-avatar icon="pi pi-wrench" class="mr-2" size="large" shape="circle" />
+                        <div class="flex flex-col">
+                          <span class="font-bold text-primary"
+                            >Serviço #{{ getServico(item).id }}</span
+                          >
+                          <span class="text-sm text-neutral-500"
+                            >{{ getServico(item).produto.numeroSerie }}</span
+                          >
+                        </div>
+                      </div>
+                      <p-message
+                        [severity]="getServico(item).tipo === 1 ? 'info' : 'warn'"
+                        size="small"
+                        >{{ getServico(item).tipo === 1 ? 'Externo' : 'Interno' }}</p-message
+                      >
+                    </section>
+                  </ng-template>
+                  <div class="flex justify-between text-sm">
+                    <div>
+                      <p>
+                        <strong>Produto:</strong> {{ getServico(item).produto.aparelho }}
+                        {{ getServico(item).produto.modelo }}
+                      </p>
+                      <p><strong>Data Início:</strong> {{ getServico(item).dataInicio | date }}</p>
+                    </div>
+                    <div class="text-end">
+                      <p>
+                        <strong>Data Fim:</strong>
+                        {{ getServico(item).dataFim ? (getServico(item).dataFim | date) : 'Em andamento' }}
+                      </p>
+                      <p class="text-blue-600">
+                        <strong>Valor:</strong> {{ getServico(item).valor | currency: 'BRL' }}
+                      </p>
+                    </div>
+                  </div>
+                  @if (getServico(item).observacoes) {
+                    <div class="mt-2 pt-2 border-t border-neutral-200">
+                      <p class="text-sm text-gray-600">
+                        <strong>Obs:</strong> {{ getServico(item).observacoes }}
+                      </p>
+                    </div>
+                  }
+                </p-card>
+              }
+            </div>
+          } @else {
+            <p-card header="Nenhum serviço encontrado">
+              <p class="m-0">Esta pessoa ainda não possui serviços registrados.</p>
+            </p-card>
+          }
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+  <div class="flex justify-end pt-4">
+    <p-button label="Fechar" severity="primary" [outlined]="true" (click)="fecharModal()"></p-button>
+  </div>
+</p-dialog>

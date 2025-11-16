@@ -69,6 +69,15 @@
                   <p class="max-w-64 overflow-x-auto">{{ pessoa.observacoes }}</p>
                 </p-popover>
                 <p-button
+                  icon="pi pi-history"
+                  [text]="true"
+                  severity="primary"
+                  [rounded]="true"
+                  pTooltip="Ver Histórico"
+                  tooltipPosition="bottom"
+                  (click)="abrirModalHistorico(pessoa)"
+                ></p-button>
+                <p-button
                   icon="pi pi-pen-to-square"
                   [text]="true"
                   severity="primary"
@@ -265,4 +274,9 @@
       </div>
     </form>
   </p-dialog>
+
+  <app-historico-pessoa-modal
+    [pessoa]="pessoaHistorico"
+    [(visible)]="modalHistoricoAberto"
+  ></app-historico-pessoa-modal>
 </main>

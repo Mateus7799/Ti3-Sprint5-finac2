@@ -29,6 +29,8 @@ import { CpfCnpjMaskPipe } from '../../../pipes/cpf-cnpj-mask.pipe';
 import { TelefonePipe } from '../../../pipes/telefone.pipe';
 import { PopoverModule } from 'primeng/popover';
 import { CpfCnpjValidator } from '../../../validators/cpfCnpj.validator';
+import { HistoricoPessoaModal } from './historico-pessoa-modal/historico-pessoa-modal';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-pessoas-tabs',
@@ -56,6 +58,8 @@ import { CpfCnpjValidator } from '../../../validators/cpfCnpj.validator';
     AvatarModule,
     ScrollPanelModule,
     DatePickerModule,
+    HistoricoPessoaModal,
+    TooltipModule,
   ],
   templateUrl: './pessoas-tabs.html',
   providers: [MessageService],
@@ -67,7 +71,9 @@ export class PessoasTabsComponent {
   pessoas: PessoaResponse[] = [];
 
   modalFormularioAberto: boolean = false;
+  modalHistoricoAberto: boolean = false;
   editandoPessoa: PessoaResponse | undefined;
+  pessoaHistorico: PessoaResponse | undefined;
 
   paginaAtual: number = 0;
   itensPorPagina: number = 4;
@@ -153,6 +159,11 @@ export class PessoasTabsComponent {
     this.editandoPessoa = pessoa;
     console.log(pessoa.dataNascimento);
     this.modalFormularioAberto = true;
+  }
+
+  abrirModalHistorico(pessoa: PessoaResponse) {
+    this.pessoaHistorico = pessoa;
+    this.modalHistoricoAberto = true;
   }
 
   esconderFormularioModal(form: NgForm) {
