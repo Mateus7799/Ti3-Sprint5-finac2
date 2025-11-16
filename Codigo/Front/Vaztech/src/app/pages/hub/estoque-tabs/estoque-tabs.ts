@@ -14,6 +14,8 @@ import { CardModule } from 'primeng/card';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
+import { HistoricoProdutoModal } from './historico-produto-modal/historico-produto-modal';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-estoque-tabs',
@@ -31,6 +33,8 @@ import { FormsModule } from '@angular/forms';
     FormularioEstoque,
     Toast,
     FormsModule,
+    HistoricoProdutoModal,
+    TooltipModule,
   ],
   providers: [MessageService],
   templateUrl: './estoque-tabs.html',
@@ -50,6 +54,8 @@ export class EstoqueTabsComponent {
   produtoService = inject(ProdutoService);
 
   searchText: string = '';
+  modalHistoricoAberto: boolean = false;
+  produtoHistorico: Produto | undefined;
 
   ngOnInit() {
     this.carregarProdutos(0);
@@ -77,6 +83,11 @@ export class EstoqueTabsComponent {
   onEditarProduto(produto: Produto) {
     this.produtosEdicao.push(produto);
     this.abaAtual = this.produtosEdicao.length + 1;
+  }
+
+  abrirModalHistorico(produto: Produto) {
+    this.produtoHistorico = produto;
+    this.modalHistoricoAberto = true;
   }
 
   carregarProdutos(pagina?: number) {

@@ -94,7 +94,19 @@
       <label for="observacoes">Digite aqui...</label>
     </p-floatlabel>
   </p-fieldset>
-  <div class="w-full flex justify-end">
+  <div class="w-full flex justify-between">
+    @if (itemEdicao) {
+      <p-button
+        label="Ver Histórico"
+        icon="pi pi-history"
+        [outlined]="true"
+        severity="secondary"
+        type="button"
+        (click)="abrirHistorico()"
+      ></p-button>
+    } @else {
+      <div></div>
+    }
     <p-button [label]="itemEdicao ? 'Salvar' : 'Adicionar'" type="submit"></p-button>
   </div>
 </form>

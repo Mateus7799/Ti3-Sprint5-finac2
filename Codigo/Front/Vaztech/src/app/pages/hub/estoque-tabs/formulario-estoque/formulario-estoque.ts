@@ -38,6 +38,7 @@ export class FormularioEstoque implements OnInit {
   @Input() opcoesStatus: ProdutoStatus[] = [];
 
   @Output() fecharAba = new EventEmitter();
+  @Output() verHistorico = new EventEmitter<Produto>();
 
   toastService = inject(MessageService);
   produtoService = inject(ProdutoService);
@@ -95,6 +96,12 @@ export class FormularioEstoque implements OnInit {
     const index = this.opcoesStatus.findIndex((val) => val.nome === 'EM ESTOQUE');
     if (index < 0) return this.opcoesStatus[0];
     return this.opcoesStatus[index];
+  }
+
+  abrirHistorico() {
+    if (this.itemEdicao) {
+      this.verHistorico.emit(this.itemEdicao);
+    }
   }
 
   editarItem(produto: Produto) {

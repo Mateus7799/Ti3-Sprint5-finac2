@@ -92,7 +92,15 @@
                 <td>{{ item.aparelho }}</td>
                 <td>{{ item.modelo }}</td>
                 <td>{{ getNomeStatus(item.status) }}</td>
-                <td class="flex justify-center items-center">
+                <td class="flex justify-center items-center gap-2">
+                  <p-button
+                    icon="pi pi-history"
+                    [outlined]="true"
+                    severity="primary"
+                    pTooltip="Ver Histórico"
+                    tooltipPosition="bottom"
+                    (click)="abrirModalHistorico(item)"
+                  ></p-button>
                   <p-button icon="pi pi-pen-to-square" (click)="onEditarProduto(item)"></p-button>
                 </td>
               </tr>
@@ -130,10 +138,16 @@
           <app-formulario-estoque
             [opcoesStatus]="opcoesStatus"
             (fecharAba)="fecharAba(index, $event)"
+            (verHistorico)="abrirModalHistorico($event)"
             [itemEdicao]="item"
           ></app-formulario-estoque>
         </p-tabpanel>
       }
     </p-tabpanels>
   </p-tabs>
+
+  <app-historico-produto-modal
+    [produto]="produtoHistorico"
+    [(visible)]="modalHistoricoAberto"
+  ></app-historico-produto-modal>
 </main>
