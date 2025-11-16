@@ -21,112 +21,49 @@
           @if (historico.length > 0) {
             <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
               @for (item of historico; track item.data) {
-                @if (item.tipo === 'operacao') {
-                  <p-card>
-                    <ng-template #title>
-                      <section class="flex justify-between items-center">
-                        <div class="flex items-center">
-                          <p-avatar
-                            icon="pi pi-dollar"
-                            class="mr-2"
-                            size="large"
-                            shape="circle"
-                          />
-                          <div class="flex flex-col">
-                            <span class="font-bold text-primary"
-                              >Operação #{{ getOperacao(item).id }}</span
-                            >
-                            <span class="text-sm text-neutral-500"
-                              >{{ getOperacao(item).pessoa.nome }}</span
-                            >
-                          </div>
+                <p-card>
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex items-center">
+                        <p-avatar
+                          [icon]="item.dataFim ? 'pi pi-wrench' : 'pi pi-dollar'"
+                          class="mr-2"
+                          size="large"
+                          shape="circle"
+                        />
+                        <div class="flex flex-col">
+                          <span class="font-bold text-primary">{{ item.label }}</span>
+                          <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
                         </div>
-                        <p-message
-                          [severity]="getSeveridadeOperacao(getOperacao(item).tipo)"
-                          size="small"
-                          >{{ getTipoOperacao(getOperacao(item).tipo) }}</p-message
-                        >
-                      </section>
-                    </ng-template>
-                    <div class="flex justify-between text-sm">
-                      <div>
-                        <p><strong>Cliente:</strong> {{ getOperacao(item).pessoa.nome }}</p>
-                        <p><strong>CPF/CNPJ:</strong> {{ getOperacao(item).pessoa.cpfCnpj }}</p>
-                        <p><strong>Funcionário:</strong> {{ getOperacao(item).funcionario.nome }}</p>
                       </div>
-                      <div class="text-end">
-                        <p><strong>Data:</strong> {{ getOperacao(item).dataHoraTransacao | date }}</p>
-                        <p
-                          [ngClass]="
-                            getOperacao(item).tipo === 0 ? 'text-green-600' : 'text-red-600'
-                          "
-                        >
-                          <strong>Valor:</strong> {{ getOperacao(item).valor | currency: 'BRL' }}
-                        </p>
-                      </div>
+                      <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
+                        {{ item.label }}
+                      </p-message>
+                    </section>
+                  </ng-template>
+                  <div class="flex justify-between text-sm">
+                    <div>
+                      <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
+                      <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
+                      <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
                     </div>
-                    @if (getOperacao(item).observacoes) {
-                      <div class="mt-2 pt-2 border-t border-neutral-200">
-                        <p class="text-sm text-gray-600">
-                          <strong>Obs:</strong> {{ getOperacao(item).observacoes }}
-                        </p>
-                      </div>
-                    }
-                  </p-card>
-                } @else {
-                  <p-card>
-                    <ng-template #title>
-                      <section class="flex justify-between items-center">
-                        <div class="flex items-center">
-                          <p-avatar
-                            icon="pi pi-wrench"
-                            class="mr-2"
-                            size="large"
-                            shape="circle"
-                          />
-                          <div class="flex flex-col">
-                            <span class="font-bold text-primary"
-                              >Serviço #{{ getServico(item).id }}</span
-                            >
-                            <span class="text-sm text-neutral-500"
-                              >{{ getServico(item).pessoa?.nome || 'Sem cliente' }}</span
-                            >
-                          </div>
-                        </div>
-                        <p-message
-                          [severity]="getServico(item).tipo === 1 ? 'info' : 'warn'"
-                          size="small"
-                          >{{ getServico(item).tipo === 1 ? 'Externo' : 'Interno' }}</p-message
-                        >
-                      </section>
-                    </ng-template>
-                    <div class="flex justify-between text-sm">
-                      <div>
-                        @if (getServico(item).pessoa) {
-                          <p><strong>Cliente:</strong> {{ getServico(item).pessoa.nome }}</p>
-                          <p><strong>CPF/CNPJ:</strong> {{ getServico(item).pessoa.cpfCnpj }}</p>
-                        }
-                        <p><strong>Data Início:</strong> {{ getServico(item).dataInicio | date }}</p>
-                      </div>
-                      <div class="text-end">
-                        <p>
-                          <strong>Data Fim:</strong>
-                          {{ getServico(item).dataFim ? (getServico(item).dataFim | date) : 'Em andamento' }}
-                        </p>
-                        <p class="text-blue-600">
-                          <strong>Valor:</strong> {{ getServico(item).valor | currency: 'BRL' }}
-                        </p>
-                      </div>
+                    <div class="text-end">
+                      <p><strong>Data:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
+                      @if (item.dataFim) {
+                        <p><strong>Data Fim:</strong> {{ item.dataFim | date: 'dd/MM/yyyy' }}</p>
+                      }
+                      <p
+                        [ngClass]="{
+                          'text-green-600': item.label === 'Venda',
+                          'text-red-600': item.label === 'Compra',
+                          'text-blue-600': item.label !== 'Venda' && item.label !== 'Compra'
+                        }"
+                      >
+                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
+                      </p>
                     </div>
-                    @if (getServico(item).observacoes) {
-                      <div class="mt-2 pt-2 border-t border-neutral-200">
-                        <p class="text-sm text-gray-600">
-                          <strong>Obs:</strong> {{ getServico(item).observacoes }}
-                        </p>
-                      </div>
-                    }
-                  </p-card>
-                }
+                  </div>
+                </p-card>
               }
             </div>
           } @else {
@@ -145,45 +82,34 @@
                       <div class="flex items-center">
                         <p-avatar icon="pi pi-dollar" class="mr-2" size="large" shape="circle" />
                         <div class="flex flex-col">
-                          <span class="font-bold text-primary"
-                            >Operação #{{ getOperacao(item).id }}</span
-                          >
-                          <span class="text-sm text-neutral-500"
-                            >{{ getOperacao(item).pessoa.nome }}</span
-                          >
+                          <span class="font-bold text-primary">{{ item.label }}</span>
+                          <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
                         </div>
                       </div>
-                      <p-message
-                        [severity]="getSeveridadeOperacao(getOperacao(item).tipo)"
-                        size="small"
-                        >{{ getTipoOperacao(getOperacao(item).tipo) }}</p-message
-                      >
+                      <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
+                        {{ item.label }}
+                      </p-message>
                     </section>
                   </ng-template>
                   <div class="flex justify-between text-sm">
                     <div>
-                      <p><strong>Cliente:</strong> {{ getOperacao(item).pessoa.nome }}</p>
-                      <p><strong>CPF/CNPJ:</strong> {{ getOperacao(item).pessoa.cpfCnpj }}</p>
-                      <p><strong>Funcionário:</strong> {{ getOperacao(item).funcionario.nome }}</p>
+                      <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
+                      <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
+                      <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
                     </div>
                     <div class="text-end">
-                      <p><strong>Data:</strong> {{ getOperacao(item).dataHoraTransacao | date }}</p>
+                      <p><strong>Data:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
                       <p
-                        [ngClass]="
-                          getOperacao(item).tipo === 0 ? 'text-green-600' : 'text-red-600'
-                        "
+                        [ngClass]="{
+                          'text-green-600': item.label === 'Venda',
+                          'text-red-600': item.label === 'Compra',
+                          'text-orange-600': item.label === 'Troca'
+                        }"
                       >
-                        <strong>Valor:</strong> {{ getOperacao(item).valor | currency: 'BRL' }}
+                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
                       </p>
                     </div>
                   </div>
-                  @if (getOperacao(item).observacoes) {
-                    <div class="mt-2 pt-2 border-t border-neutral-200">
-                      <p class="text-sm text-gray-600">
-                        <strong>Obs:</strong> {{ getOperacao(item).observacoes }}
-                      </p>
-                    </div>
-                  }
                 </p-card>
               }
             </div>
@@ -203,46 +129,29 @@
                       <div class="flex items-center">
                         <p-avatar icon="pi pi-wrench" class="mr-2" size="large" shape="circle" />
                         <div class="flex flex-col">
-                          <span class="font-bold text-primary"
-                            >Serviço #{{ getServico(item).id }}</span
-                          >
-                          <span class="text-sm text-neutral-500"
-                            >{{ getServico(item).pessoa?.nome || 'Sem cliente' }}</span
-                          >
+                          <span class="font-bold text-primary">{{ item.label }}</span>
+                          <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
                         </div>
                       </div>
-                      <p-message
-                        [severity]="getServico(item).tipo === 1 ? 'info' : 'warn'"
-                        size="small"
-                        >{{ getServico(item).tipo === 1 ? 'Externo' : 'Interno' }}</p-message
-                      >
+                      <p-message severity="info" size="small">{{ item.label }}</p-message>
                     </section>
                   </ng-template>
                   <div class="flex justify-between text-sm">
                     <div>
-                      @if (getServico(item).pessoa) {
-                        <p><strong>Cliente:</strong> {{ getServico(item).pessoa.nome }}</p>
-                        <p><strong>CPF/CNPJ:</strong> {{ getServico(item).pessoa.cpfCnpj }}</p>
-                      }
-                      <p><strong>Data Início:</strong> {{ getServico(item).dataInicio | date }}</p>
+                      <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
+                      <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
+                      <p><strong>Data Início:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
                     </div>
                     <div class="text-end">
                       <p>
                         <strong>Data Fim:</strong>
-                        {{ getServico(item).dataFim ? (getServico(item).dataFim | date) : 'Em andamento' }}
+                        {{ item.dataFim ? (item.dataFim | date: 'dd/MM/yyyy') : 'Em andamento' }}
                       </p>
                       <p class="text-blue-600">
-                        <strong>Valor:</strong> {{ getServico(item).valor | currency: 'BRL' }}
+                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
                       </p>
                     </div>
                   </div>
-                  @if (getServico(item).observacoes) {
-                    <div class="mt-2 pt-2 border-t border-neutral-200">
-                      <p class="text-sm text-gray-600">
-                        <strong>Obs:</strong> {{ getServico(item).observacoes }}
-                      </p>
-                    </div>
-                  }
                 </p-card>
               }
             </div>

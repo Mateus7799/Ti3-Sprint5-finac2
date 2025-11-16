@@ -7,18 +7,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
 import { TabsModule } from 'primeng/tabs';
 import { PessoaResponse } from '../../../../models/pessoa.model';
-import { Operacao } from '../../../../models/operacao.model';
-import { Servico } from '../../../../models/servico.model';
-import { OperacoesService } from '../../../../services/operacoes.service';
-import { ServicosService } from '../../../../services/servicos.service';
+import { HistoricoPessoaItem } from '../../../../models/historico.model';
+import { HistoricoService } from '../../../../services/historico.service';
 import { MessageService } from 'primeng/api';
-import { forkJoin } from 'rxjs';
-
-type HistoricoItem = {
-  tipo: 'operacao' | 'servico';
-  data: Date;
-  dados: Operacao | Servico;
-};
 
 @Component({
   selector: 'app-historico-pessoa-modal',
@@ -42,11 +33,10 @@ export class HistoricoPessoaModal implements OnChanges {
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
 
-  operacoesService = inject(OperacoesService);
-  servicosService = inject(ServicosService);
+  historicoService = inject(HistoricoService);
   toastService = inject(MessageService);
 
-  historico: HistoricoItem[] = [];
+  historico: HistoricoPessoaItem[] = [];
   carregando: boolean = false;
   abaAtual: number = 0;
 
@@ -67,42 +57,11 @@ export class HistoricoPessoaModal implements OnChanges {
     this.carregando = true;
     this.historico = [];
 
-    const cpfCnpj = this.pessoa.cpfCnpj;
-
-    forkJoin({
-      operacoes: this.operacoesService.listarOperacoes('vendas', 0, 999, cpfCnpj),
-      compras: this.operacoesService.listarOperacoes('compras', 0, 999, cpfCnpj),
-      servicos: this.servicosService.buscarServicos(0, 999, cpfCnpj),
-    }).subscribe({
+    this.historicoService.buscarHistoricoPessoa(this.pessoa.id).subscribe({
       next: (resultado) => {
-        const operacoesVenda = resultado.operacoes.content
-          .filter((op) => op.pessoa.id === this.pessoa?.id)
-          .map((op) => ({
-            tipo: 'operacao' as const,
-            data: new Date(op.dataHoraTransacao),
-            dados: op,
-          }));
-
-        const operacoesCompra = resultado.compras.content
-          .filter((op) => op.pessoa.id === this.pessoa?.id)
-          .map((op) => ({
-            tipo: 'operacao' as const,
-            data: new Date(op.dataHoraTransacao),
-            dados: op,
-          }));
-
-        const servicos = resultado.servicos.content
-          .filter((serv) => serv.pessoa?.id === this.pessoa?.id)
-          .map((serv) => ({
-            tipo: 'servico' as const,
-            data: new Date(serv.dataInicio),
-            dados: serv,
-          }));
-
-        this.historico = [...operacoesVenda, ...operacoesCompra, ...servicos].sort(
-          (a, b) => a.data.getTime() - b.data.getTime(),
+        this.historico = resultado.sort(
+          (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime(),
         );
-
         this.carregando = false;
       },
       error: (err) => {
@@ -117,31 +76,18 @@ export class HistoricoPessoaModal implements OnChanges {
     });
   }
 
-  get operacoes(): HistoricoItem[] {
-    return this.historico.filter((item) => item.tipo === 'operacao');
+  get operacoes(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) => !item.dataFim || item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
   }
 
-  get servicos(): HistoricoItem[] {
-    return this.historico.filter((item) => item.tipo === 'servico');
+  get servicos(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
   }
 
-  getOperacao(item: HistoricoItem): Operacao {
-    return item.dados as Operacao;
-  }
-
-  getServico(item: HistoricoItem): Servico {
-    return item.dados as Servico;
-  }
-
-  getTipoOperacao(tipo: number): string {
-    if (tipo === 0) return 'Venda';
-    if (tipo === 1) return 'Compra';
-    return 'Troca';
-  }
-
-  getSeveridadeOperacao(tipo: number): 'success' | 'error' | 'warn' {
-    if (tipo === 0) return 'success';
-    if (tipo === 1) return 'error';
-    return 'warn';
+  getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
+    if (label === 'Venda') return 'success';
+    if (label === 'Compra') return 'error';
+    if (label === 'Troca') return 'warn';
+    return 'info';
   }
 }
