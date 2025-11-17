@@ -76,12 +76,12 @@ export class HistoricoPessoaModal implements OnChanges {
     });
   }
 
-  get operacoes(): HistoricoPessoaItem[] {
-    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
-  }
-
   get servicos(): HistoricoPessoaItem[] {
     return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
+  }
+
+  get operacoes(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {

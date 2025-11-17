@@ -76,12 +76,12 @@ export class HistoricoProdutoModal implements OnChanges {
     });
   }
 
-  get operacoes(): HistoricoProdutoItem[] {
-    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
-  }
-
   get servicos(): HistoricoProdutoItem[] {
     return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
+  }
+
+  get operacoes(): HistoricoProdutoItem[] {
+    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
