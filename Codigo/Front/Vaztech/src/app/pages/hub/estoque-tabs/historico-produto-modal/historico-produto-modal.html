@@ -10,177 +10,69 @@
       <p-message severity="info" size="small">Carregando histórico...</p-message>
     </div>
   } @else {
-    <p-tabs [(value)]="abaAtual">
-      <p-tablist>
-        <p-tab [value]="0">Todas ({{ historico.length }})</p-tab>
-        <p-tab [value]="1">Serviços ({{ servicos.length }})</p-tab>
-        <p-tab [value]="2">Operações ({{ operacoes.length }})</p-tab>
-      </p-tablist>
-      <p-tabpanels>
-        <p-tabpanel [value]="0">
-          @if (historico.length > 0) {
-            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              @for (item of historico; track item.data) {
-                <p-card [ngClass]="{
-                  'border-l-4 border-green-500': item.label === 'Venda',
-                  'border-l-4 border-red-500': item.label === 'Compra'
-                }">
-                  <ng-template #title>
-                    <section class="flex justify-between items-center">
-                      <div class="flex items-center">
-                        <p-avatar
-                          [icon]="item.dataFim ? 'pi pi-wrench' : 'pi pi-dollar'"
-                          class="mr-2"
-                          size="large"
-                          shape="circle"
-                        />
-                        <div class="flex flex-col">
-                          <span class="font-bold text-primary">{{ item.label }}</span>
-                          @if (item.pessoa) {
-                            <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
-                          }
-                        </div>
-                      </div>
-                      <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
-                        {{ item.label }}
-                      </p-message>
-                    </section>
-                  </ng-template>
-                  <div class="flex justify-between text-sm">
-                    <div>
-                      @if (item.pessoa) {
-                        <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
-                        <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
-                      }
-                      <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
-                    </div>
-                    <div class="text-end">
-                      <p><strong>Data:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
-                      @if (item.dataFim) {
-                        <p><strong>Data Fim:</strong> {{ item.dataFim | date: 'dd/MM/yyyy' }}</p>
-                      }
-                      <p
-                        [ngClass]="{
-                          'text-green-600': item.label === 'Venda',
-                          'text-red-600': item.label === 'Compra',
-                          'text-blue-600': item.label !== 'Venda' && item.label !== 'Compra'
-                        }"
-                      >
-                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
-                      </p>
-                    </div>
+    @if (historico.length > 0) {
+      <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+        @for (item of historico; track item.data) {
+          <p-card
+            [ngClass]="{
+              'border-l-4 border-green-500': item.label === 'Venda',
+              'border-l-4 border-red-500': item.label === 'Compra'
+            }"
+          >
+            <ng-template #title>
+              <section class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <p-avatar
+                    [icon]="item.dataFim ? 'pi pi-wrench' : 'pi pi-dollar'"
+                    class="mr-2"
+                    size="large"
+                    shape="circle"
+                  />
+                  <div class="flex flex-col">
+                    <span class="font-bold text-primary">{{ item.label }}</span>
+                    @if (item.pessoa) {
+                      <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
+                    }
                   </div>
-                </p-card>
-              }
+                </div>
+                <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
+                  {{ item.label }}
+                </p-message>
+              </section>
+            </ng-template>
+            <div class="flex justify-between text-sm">
+              <div>
+                @if (item.pessoa) {
+                  <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
+                  <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
+                }
+                <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
+              </div>
+              <div class="text-end">
+                <p><strong>Data:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
+                @if (item.dataFim) {
+                  <p><strong>Data Fim:</strong> {{ item.dataFim | date: 'dd/MM/yyyy' }}</p>
+                }
+                <p
+                  [ngClass]="{
+                    'text-green-600': item.label === 'Venda',
+                    'text-red-600': item.label === 'Compra',
+                    'text-orange-600': item.label === 'Troca',
+                    'text-blue-600': item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca'
+                  }"
+                >
+                  <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
+                </p>
+              </div>
             </div>
-          } @else {
-            <p-card header="Nenhum histórico encontrado">
-              <p class="m-0">Este produto ainda não possui operações ou serviços registrados.</p>
-            </p-card>
-          }
-        </p-tabpanel>
-        <p-tabpanel [value]="1">
-          @if (servicos.length > 0) {
-            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              @for (item of servicos; track item.data) {
-                <p-card>
-                  <ng-template #title>
-                    <section class="flex justify-between items-center">
-                      <div class="flex items-center">
-                        <p-avatar icon="pi pi-wrench" class="mr-2" size="large" shape="circle" />
-                        <div class="flex flex-col">
-                          <span class="font-bold text-primary">{{ item.label }}</span>
-                          @if (item.pessoa) {
-                            <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
-                          }
-                        </div>
-                      </div>
-                      <p-message severity="info" size="small">{{ item.label }}</p-message>
-                    </section>
-                  </ng-template>
-                  <div class="flex justify-between text-sm">
-                    <div>
-                      @if (item.pessoa) {
-                        <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
-                        <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
-                      }
-                      <p><strong>Data Início:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
-                    </div>
-                    <div class="text-end">
-                      <p>
-                        <strong>Data Fim:</strong>
-                        {{ item.dataFim ? (item.dataFim | date: 'dd/MM/yyyy') : 'Em andamento' }}
-                      </p>
-                      <p class="text-blue-600">
-                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
-                      </p>
-                    </div>
-                  </div>
-                </p-card>
-              }
-            </div>
-          } @else {
-            <p-card header="Nenhum serviço encontrado">
-              <p class="m-0">Este produto ainda não possui serviços registrados.</p>
-            </p-card>
-          }
-        </p-tabpanel>
-        <p-tabpanel [value]="2">
-          @if (operacoes.length > 0) {
-            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              @for (item of operacoes; track item.data) {
-                <p-card [ngClass]="{
-                  'border-l-4 border-green-500': item.label === 'Venda',
-                  'border-l-4 border-red-500': item.label === 'Compra'
-                }">
-                  <ng-template #title>
-                    <section class="flex justify-between items-center">
-                      <div class="flex items-center">
-                        <p-avatar icon="pi pi-dollar" class="mr-2" size="large" shape="circle" />
-                        <div class="flex flex-col">
-                          <span class="font-bold text-primary">{{ item.label }}</span>
-                          @if (item.pessoa) {
-                            <span class="text-sm text-neutral-500">{{ item.pessoa.nome }}</span>
-                          }
-                        </div>
-                      </div>
-                      <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
-                        {{ item.label }}
-                      </p-message>
-                    </section>
-                  </ng-template>
-                  <div class="flex justify-between text-sm">
-                    <div>
-                      @if (item.pessoa) {
-                        <p><strong>Cliente:</strong> {{ item.pessoa.nome }}</p>
-                        <p><strong>CPF/CNPJ:</strong> {{ item.pessoa.cpfCnpj }}</p>
-                      }
-                      <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
-                    </div>
-                    <div class="text-end">
-                      <p><strong>Data:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
-                      <p
-                        [ngClass]="{
-                          'text-green-600': item.label === 'Venda',
-                          'text-red-600': item.label === 'Compra',
-                          'text-orange-600': item.label === 'Troca'
-                        }"
-                      >
-                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
-                      </p>
-                    </div>
-                  </div>
-                </p-card>
-              }
-            </div>
-          } @else {
-            <p-card header="Nenhuma operação encontrada">
-              <p class="m-0">Este produto ainda não possui operações registradas.</p>
-            </p-card>
-          }
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
+          </p-card>
+        }
+      </div>
+    } @else {
+      <p-card header="Nenhum histórico encontrado">
+        <p class="m-0">Este produto ainda não possui operações ou serviços registrados.</p>
+      </p-card>
+    }
   }
   <div class="flex justify-end pt-4">
     <p-button label="Fechar" severity="primary" [outlined]="true" (click)="fecharModal()"></p-button>

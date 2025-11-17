@@ -5,7 +5,6 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
-import { TabsModule } from 'primeng/tabs';
 import { PessoaResponse } from '../../../../models/pessoa.model';
 import { HistoricoPessoaItem } from '../../../../models/historico.model';
 import { HistoricoService } from '../../../../services/historico.service';
@@ -21,7 +20,6 @@ import { MessageService } from 'primeng/api';
     CardModule,
     AvatarModule,
     MessageModule,
-    TabsModule,
     DatePipe,
     CurrencyPipe,
   ],
@@ -38,7 +36,6 @@ export class HistoricoPessoaModal implements OnChanges {
 
   historico: HistoricoPessoaItem[] = [];
   carregando: boolean = false;
-  abaAtual: number = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible && this.pessoa) {
@@ -60,7 +57,7 @@ export class HistoricoPessoaModal implements OnChanges {
     this.historicoService.buscarHistoricoPessoa(this.pessoa.id).subscribe({
       next: (resultado) => {
         this.historico = resultado.sort(
-          (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime(),
+          (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime(),
         );
         this.carregando = false;
       },
@@ -74,14 +71,6 @@ export class HistoricoPessoaModal implements OnChanges {
         this.carregando = false;
       },
     });
-  }
-
-  get operacoes(): HistoricoPessoaItem[] {
-    return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
-  }
-
-  get servicos(): HistoricoPessoaItem[] {
-    return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
