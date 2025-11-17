@@ -21,7 +21,10 @@
           @if (historico.length > 0) {
             <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
               @for (item of historico; track item.data) {
-                <p-card [severity]="getCardSeverity(item.label)">
+                <p-card [ngClass]="{
+                  'border-l-4 border-green-500': item.label === 'Venda',
+                  'border-l-4 border-red-500': item.label === 'Compra'
+                }">
                   <ng-template #title>
                     <section class="flex justify-between items-center">
                       <div class="flex items-center">
@@ -126,7 +129,10 @@
           @if (operacoes.length > 0) {
             <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
               @for (item of operacoes; track item.data) {
-                <p-card [severity]="getCardSeverity(item.label)">
+                <p-card [ngClass]="{
+                  'border-l-4 border-green-500': item.label === 'Venda',
+                  'border-l-4 border-red-500': item.label === 'Compra'
+                }">
                   <ng-template #title>
                     <section class="flex justify-between items-center">
                       <div class="flex items-center">

@@ -76,12 +76,12 @@ export class HistoricoPessoaModal implements OnChanges {
     });
   }
 
-  get servicos(): HistoricoPessoaItem[] {
-    return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
-  }
-
   get operacoes(): HistoricoPessoaItem[] {
     return this.historico.filter((item) => item.label === 'Venda' || item.label === 'Compra' || item.label === 'Troca');
+  }
+
+  get servicos(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) => item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca');
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
@@ -89,11 +89,5 @@ export class HistoricoPessoaModal implements OnChanges {
     if (label === 'Compra') return 'error';
     if (label === 'Troca') return 'warn';
     return 'info';
-  }
-
-  getCardSeverity(label: string): 'success' | 'danger' | undefined {
-    if (label === 'Venda') return 'success';
-    if (label === 'Compra') return 'danger';
-    return undefined;
   }
 }
