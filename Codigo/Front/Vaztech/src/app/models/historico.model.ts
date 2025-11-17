@@ -1,6 +1,6 @@
 export type HistoricoPessoaItem = {
   label: string;
-  produto: {
+  produto?: {
     id: number;
     numeroSerie: string;
     aparelho: string;
@@ -18,7 +18,7 @@ export type HistoricoPessoaItem = {
 
 export type HistoricoProdutoItem = {
   label: string;
-  pessoa: {
+  pessoa?: {
     id: number;
     nome: string;
     cpfCnpj: string;

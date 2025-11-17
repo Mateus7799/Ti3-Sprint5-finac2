@@ -13,15 +13,15 @@
     <p-tabs [(value)]="abaAtual">
       <p-tablist>
         <p-tab [value]="0">Todas ({{ historico.length }})</p-tab>
-        <p-tab [value]="1">Operações ({{ operacoes.length }})</p-tab>
-        <p-tab [value]="2">Serviços ({{ servicos.length }})</p-tab>
+        <p-tab [value]="1">Serviços ({{ servicos.length }})</p-tab>
+        <p-tab [value]="2">Operações ({{ operacoes.length }})</p-tab>
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel [value]="0">
           @if (historico.length > 0) {
             <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
               @for (item of historico; track item.data) {
-                <p-card>
+                <p-card [severity]="getCardSeverity(item.label)">
                   <ng-template #title>
                     <section class="flex justify-between items-center">
                       <div class="flex items-center">
@@ -33,7 +33,9 @@
                         />
                         <div class="flex flex-col">
                           <span class="font-bold text-primary">{{ item.label }}</span>
-                          <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
+                          @if (item.produto) {
+                            <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
+                          }
                         </div>
                       </div>
                       <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
@@ -43,10 +45,12 @@
                   </ng-template>
                   <div class="flex justify-between text-sm">
                     <div>
-                      <p>
-                        <strong>Produto:</strong> {{ item.produto.aparelho }}
-                        {{ item.produto.modelo }}
-                      </p>
+                      @if (item.produto) {
+                        <p>
+                          <strong>Produto:</strong> {{ item.produto.aparelho }}
+                          {{ item.produto.modelo }}
+                        </p>
+                      }
                       <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
                     </div>
                     <div class="text-end">
@@ -75,17 +79,67 @@
           }
         </p-tabpanel>
         <p-tabpanel [value]="1">
+          @if (servicos.length > 0) {
+            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+              @for (item of servicos; track item.data) {
+                <p-card>
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex items-center">
+                        <p-avatar icon="pi pi-wrench" class="mr-2" size="large" shape="circle" />
+                        <div class="flex flex-col">
+                          <span class="font-bold text-primary">{{ item.label }}</span>
+                          @if (item.produto) {
+                            <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
+                          }
+                        </div>
+                      </div>
+                      <p-message severity="info" size="small">{{ item.label }}</p-message>
+                    </section>
+                  </ng-template>
+                  <div class="flex justify-between text-sm">
+                    <div>
+                      @if (item.produto) {
+                        <p>
+                          <strong>Produto:</strong> {{ item.produto.aparelho }}
+                          {{ item.produto.modelo }}
+                        </p>
+                      }
+                      <p><strong>Data Início:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
+                    </div>
+                    <div class="text-end">
+                      <p>
+                        <strong>Data Fim:</strong>
+                        {{ item.dataFim ? (item.dataFim | date: 'dd/MM/yyyy') : 'Em andamento' }}
+                      </p>
+                      <p class="text-blue-600">
+                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
+                      </p>
+                    </div>
+                  </div>
+                </p-card>
+              }
+            </div>
+          } @else {
+            <p-card header="Nenhum serviço encontrado">
+              <p class="m-0">Esta pessoa ainda não possui serviços registrados.</p>
+            </p-card>
+          }
+        </p-tabpanel>
+        <p-tabpanel [value]="2">
           @if (operacoes.length > 0) {
             <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
               @for (item of operacoes; track item.data) {
-                <p-card>
+                <p-card [severity]="getCardSeverity(item.label)">
                   <ng-template #title>
                     <section class="flex justify-between items-center">
                       <div class="flex items-center">
                         <p-avatar icon="pi pi-dollar" class="mr-2" size="large" shape="circle" />
                         <div class="flex flex-col">
                           <span class="font-bold text-primary">{{ item.label }}</span>
-                          <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
+                          @if (item.produto) {
+                            <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
+                          }
                         </div>
                       </div>
                       <p-message [severity]="getSeveridadeLabel(item.label)" size="small">
@@ -95,10 +149,12 @@
                   </ng-template>
                   <div class="flex justify-between text-sm">
                     <div>
-                      <p>
-                        <strong>Produto:</strong> {{ item.produto.aparelho }}
-                        {{ item.produto.modelo }}
-                      </p>
+                      @if (item.produto) {
+                        <p>
+                          <strong>Produto:</strong> {{ item.produto.aparelho }}
+                          {{ item.produto.modelo }}
+                        </p>
+                      }
                       <p><strong>Funcionário:</strong> {{ item.funcionario.nome }}</p>
                     </div>
                     <div class="text-end">
@@ -120,50 +176,6 @@
           } @else {
             <p-card header="Nenhuma operação encontrada">
               <p class="m-0">Esta pessoa ainda não possui operações registradas.</p>
-            </p-card>
-          }
-        </p-tabpanel>
-        <p-tabpanel [value]="2">
-          @if (servicos.length > 0) {
-            <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              @for (item of servicos; track item.data) {
-                <p-card>
-                  <ng-template #title>
-                    <section class="flex justify-between items-center">
-                      <div class="flex items-center">
-                        <p-avatar icon="pi pi-wrench" class="mr-2" size="large" shape="circle" />
-                        <div class="flex flex-col">
-                          <span class="font-bold text-primary">{{ item.label }}</span>
-                          <span class="text-sm text-neutral-500">{{ item.produto.numeroSerie }}</span>
-                        </div>
-                      </div>
-                      <p-message severity="info" size="small">{{ item.label }}</p-message>
-                    </section>
-                  </ng-template>
-                  <div class="flex justify-between text-sm">
-                    <div>
-                      <p>
-                        <strong>Produto:</strong> {{ item.produto.aparelho }}
-                        {{ item.produto.modelo }}
-                      </p>
-                      <p><strong>Data Início:</strong> {{ item.data | date: 'dd/MM/yyyy' }}</p>
-                    </div>
-                    <div class="text-end">
-                      <p>
-                        <strong>Data Fim:</strong>
-                        {{ item.dataFim ? (item.dataFim | date: 'dd/MM/yyyy') : 'Em andamento' }}
-                      </p>
-                      <p class="text-blue-600">
-                        <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}
-                      </p>
-                    </div>
-                  </div>
-                </p-card>
-              }
-            </div>
-          } @else {
-            <p-card header="Nenhum serviço encontrado">
-              <p class="m-0">Esta pessoa ainda não possui serviços registrados.</p>
             </p-card>
           }
         </p-tabpanel>

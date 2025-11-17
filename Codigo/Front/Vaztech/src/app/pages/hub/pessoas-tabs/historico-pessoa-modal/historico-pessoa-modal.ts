@@ -90,4 +90,10 @@ export class HistoricoPessoaModal implements OnChanges {
     if (label === 'Troca') return 'warn';
     return 'info';
   }
+
+  getCardSeverity(label: string): 'success' | 'danger' | undefined {
+    if (label === 'Venda') return 'success';
+    if (label === 'Compra') return 'danger';
+    return undefined;
+  }
 }
