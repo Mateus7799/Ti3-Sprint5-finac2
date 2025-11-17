@@ -16,8 +16,10 @@
         @for (item of historico; track item.data) {
           <p-card
             [ngClass]="{
-              'border-l-4 border-green-500': item.label === 'Venda',
-              'border-l-4 border-red-500': item.label === 'Compra'
+              'border-l-4 border-red-500': item.label.includes('Venda'),
+              'border-l-4 border-green-500': item.label.includes('Compra'),
+              'border-l-4 border-blue-500': !item.label.includes('Venda') && !item.label.includes('Compra') && !item.label.includes('Troca'),
+              'border-l-4 border-orange-500': item.label.includes('Troca')
             }"
           >
             <ng-template #title>
@@ -60,10 +62,10 @@
                 }
                 <p
                   [ngClass]="{
-                    'text-green-600': item.label === 'Venda',
-                    'text-red-600': item.label === 'Compra',
-                    'text-orange-600': item.label === 'Troca',
-                    'text-blue-600': item.label !== 'Venda' && item.label !== 'Compra' && item.label !== 'Troca'
+                    'text-red-600': item.label.includes('Venda'),
+                    'text-green-600': item.label.includes('Compra'),
+                    'text-orange-600': item.label.includes('Troca'),
+                    'text-blue-600': !item.label.includes('Venda') && !item.label.includes('Compra') && !item.label.includes('Troca')
                   }"
                 >
                   <strong>Valor:</strong> {{ item.valor | currency: 'BRL' }}

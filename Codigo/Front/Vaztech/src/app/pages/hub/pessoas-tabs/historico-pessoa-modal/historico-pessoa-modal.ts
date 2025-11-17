@@ -74,9 +74,9 @@ export class HistoricoPessoaModal implements OnChanges {
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
-    if (label === 'Venda') return 'success';
-    if (label === 'Compra') return 'error';
-    if (label === 'Troca') return 'warn';
+    if (label.includes('Venda')) return 'error';
+    if (label.includes('Compra')) return 'success';
+    if (label.includes('Troca')) return 'warn';
     return 'info';
   }
 }
