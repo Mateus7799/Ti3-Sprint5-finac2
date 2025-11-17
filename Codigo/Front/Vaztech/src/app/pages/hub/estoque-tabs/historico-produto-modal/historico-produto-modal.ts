@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
+import { TabsModule } from 'primeng/tabs';
 import { Produto } from '../../../../models/produto.model';
 import { HistoricoProdutoItem } from '../../../../models/historico.model';
 import { HistoricoService } from '../../../../services/historico.service';
@@ -20,6 +21,7 @@ import { MessageService } from 'primeng/api';
     CardModule,
     AvatarModule,
     MessageModule,
+    TabsModule,
     DatePipe,
     CurrencyPipe,
   ],
@@ -36,6 +38,7 @@ export class HistoricoProdutoModal implements OnChanges {
 
   historico: HistoricoProdutoItem[] = [];
   carregando: boolean = false;
+  abaAtual: number = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible && this.produto) {
@@ -71,6 +74,20 @@ export class HistoricoProdutoModal implements OnChanges {
         this.carregando = false;
       },
     });
+  }
+
+  get operacoes(): HistoricoProdutoItem[] {
+    return this.historico.filter((item) =>
+      item.label.includes('Venda') ||
+      item.label.includes('Compra') ||
+      item.label.includes('Troca')
+    );
+  }
+
+  get servicos(): HistoricoProdutoItem[] {
+    return this.historico.filter((item) =>
+      item.label.includes('Serviço')
+    );
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {

@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
+import { TabsModule } from 'primeng/tabs';
 import { PessoaResponse } from '../../../../models/pessoa.model';
 import { HistoricoPessoaItem } from '../../../../models/historico.model';
 import { HistoricoService } from '../../../../services/historico.service';
@@ -20,6 +21,7 @@ import { MessageService } from 'primeng/api';
     CardModule,
     AvatarModule,
     MessageModule,
+    TabsModule,
     DatePipe,
     CurrencyPipe,
   ],
@@ -36,6 +38,7 @@ export class HistoricoPessoaModal implements OnChanges {
 
   historico: HistoricoPessoaItem[] = [];
   carregando: boolean = false;
+  abaAtual: number = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible && this.pessoa) {
@@ -71,6 +74,20 @@ export class HistoricoPessoaModal implements OnChanges {
         this.carregando = false;
       },
     });
+  }
+
+  get operacoes(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) =>
+      item.label.includes('Venda') ||
+      item.label.includes('Compra') ||
+      item.label.includes('Troca')
+    );
+  }
+
+  get servicos(): HistoricoPessoaItem[] {
+    return this.historico.filter((item) =>
+      item.label.includes('Serviço')
+    );
   }
 
   getSeveridadeLabel(label: string): 'success' | 'error' | 'warn' | 'info' {
