@@ -8,7 +8,7 @@ export type HistoricoPessoaItem = {
   };
   data: string;
   dataFim: string | null;
-  funcionario: {
+  funcionario?: {
     id: number;
     nome: string;
     cpf: string;
@@ -25,7 +25,7 @@ export type HistoricoProdutoItem = {
   };
   data: string;
   dataFim: string | null;
-  funcionario: {
+  funcionario?: {
     id: number;
     nome: string;
     cpf: string;
